@@ -4,6 +4,7 @@ allowedOrigins:
   - "http://localhost:5173"
   - "https://ipotekabank.uz"
   - "https://band-demo-ai.vercel.app"
+  - "https://bank-chatbot-master.vercel.app"
 
 config:
   hotline: "1233"
