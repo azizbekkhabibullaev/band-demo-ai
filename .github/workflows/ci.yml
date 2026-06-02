@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, master]
 
+# Opt into Node.js 24 action runners ahead of the June 16 2026 forced migration
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── Type-check + Tests ────────────────────────────────────────────────────
   test:
@@ -87,7 +91,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          curl -fsSL "${{ secrets.RENDER_DEPLOY_HOOK }}" \
+          if [ -z "$HOOK" ]; then
+            echo "⚠️  RENDER_DEPLOY_HOOK secret not configured — skipping deploy trigger."
+            exit 0
+          fi
+          curl -fsSL "$HOOK" \
             -o /dev/null \
             -w "HTTP %{http_code}\n"
