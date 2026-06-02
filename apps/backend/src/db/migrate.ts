@@ -1,4 +1,5 @@
-import 'dotenv/config';
+// Load .env only when DATABASE_URL isn't already set (avoids overriding CI/test env vars)
+if (!process.env['DATABASE_URL']) { await import('dotenv/config'); }
 import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';

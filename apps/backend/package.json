@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
-    "test": "node --test --test-reporter=spec --import tsx/esm \"tests/**/*.test.ts\"",
+    "test": "find tests -name '*.test.ts' | grep -v 'db/migrate' | sort | { cat; echo 'tests/db/migrate.test.ts'; } | xargs node --test --test-concurrency=1 --test-reporter=spec --import tsx/esm",
     "typecheck": "tsc --noEmit",
     "migrate": "tsx src/db/migrate.ts"
   },
