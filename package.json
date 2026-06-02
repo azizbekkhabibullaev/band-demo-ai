@@ -1,0 +1,18 @@
+{
+  "name": "bank-chatbot",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*", "tools/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "npm run -w apps/backend dev",
+    "dev:widget": "npm run -w apps/widget dev",
+    "build:widget": "npm run -w apps/widget build",
+    "test": "npm run -ws --if-present test",
+    "typecheck": "npm run -ws --if-present typecheck",
+    "tenant:sync": "npm run -w tools/tenant-sync tenant-sync --",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "embed:kb": "tsx scripts/embed-kb.ts",
+    "ingest:ipoteka": "tsx scripts/ingest-ipoteka.ts"
+  }
+}

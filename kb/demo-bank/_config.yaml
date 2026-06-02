@@ -1,0 +1,27 @@
+name: "Demo Bank"
+allowedOrigins:
+  - "http://localhost:3000"
+  - "https://demo.example"
+  - "https://bank-chatbot-widget.vercel.app"   # update after first Vercel deploy if URL differs
+
+config:
+  hotline: "1200"
+  branding:
+    displayName: "Demo Bank"
+    logoUrl: null
+    accentColor: "#16a34a"
+  languages:
+    default: "ru"
+    enabled: ["uz", "ru", "en"]
+  model:
+    chat: "gpt-4o-mini"
+    embedding: "text-embedding-3-small"
+  limits:
+    ratePerMinPerIp: 60
+    messagesPerSessionPer10Min: 30
+    maxMessageLength: 2000
+    monthlyLlmBudgetUsd: 50
+  greeting:
+    uz: "Assalomu alaykum! Sizga qanday yordam bera olishim mumkin?"
+    ru: "Здравствуйте! Чем могу помочь?"
+    en: "Hi! How can I help you today?"

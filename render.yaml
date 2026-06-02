@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: bank-chatbot-api
+    runtime: node
+    # Install all deps (including devDeps for tsx) then run migrations + start
+    buildCommand: npm ci
+    startCommand: npm run -w apps/backend migrate && npm run -w apps/backend start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false          # paste your Neon connection string
+      - key: OPENAI_API_KEY
+        sync: false          # paste your OpenAI key
+      - key: IP_HASH_SALT
+        generateValue: true  # Render generates a random value on first deploy

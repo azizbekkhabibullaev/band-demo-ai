@@ -1,0 +1,28 @@
+name: "Ipoteka Bank"
+allowedOrigins:
+  - "http://localhost:3000"
+  - "http://localhost:5173"
+  - "https://ipotekabank.uz"
+
+config:
+  hotline: "1233"
+  supportPhone: "78 150 11 22"
+  branding:
+    displayName: "Ipoteka Bank"
+    logoUrl: null
+    accentColor: "#1e40af"
+  languages:
+    default: "uz"
+    enabled: ["uz", "ru"]
+  model:
+    chat: "gpt-4o-mini"
+    embedding: "text-embedding-3-small"
+  limits:
+    ratePerMinPerIp: 60
+    messagesPerSessionPer10Min: 30
+    maxMessageLength: 2000
+    monthlyLlmBudgetUsd: 100
+  greeting:
+    uz: "Assalomu alaykum! Ipoteka Bank xizmatiga xush kelibsiz. Sizga qanday yordam bera olaman?"
+    ru: "Здравствуйте! Добро пожаловать в Ipoteka Bank. Чем могу помочь?"
+    en: "Hello! Welcome to Ipoteka Bank. How can I help you today?"
