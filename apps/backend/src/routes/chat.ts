@@ -118,7 +118,7 @@ export async function chatRoute(app: FastifyInstance): Promise<void> {
       let recommendationMd = '';
       if (result.intent && RECOMMENDATION_INTENTS.has(result.intent.name)) {
         try {
-          const goal = extractGoal(result.intent.name, message);
+          const goal = extractGoal(result.intent.name, message, resolvedLang);
           const recs = buildRecommendations(goal);
           if (recs.recommendations.length > 0) {
             recommendationMd = renderRecommendations(recs, resolvedLang);

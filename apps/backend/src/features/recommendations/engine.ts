@@ -19,6 +19,7 @@ export interface CustomerGoal {
   amountHint: number | undefined;
   termMonths: number | undefined;
   currency: 'uzs' | 'usd' | 'eur';
+  lang?: string;
 }
 
 export interface ProductRecommendation {
@@ -177,6 +178,129 @@ const CARD_CATALOGUE: ProductRecommendation[] = [
   },
 ];
 
+// ─── Uzbek product catalogues ────────────────────────────────────────────────
+
+const DEPOSIT_CATALOGUE_UZ: ProductRecommendation[] = [
+  {
+    rank: 1,
+    productId: 'daromax-24',
+    productName: 'DaroMax',
+    tagline: 'Maksimal daromad — eng yaxshi muddatli depozit',
+    highlights: [
+      '📈 Stavka: yiliga 18%',
+      '⏳ Muddat: 24 oy',
+      '💰 Minimum: 500 000 UZS',
+      '🔒 Butun muddat uchun qat\'iy stavka',
+    ],
+    bestFor: 'Maqsad — maksimal daromad va pul muddatdan oldin kerak bo\'lmasa',
+    ctaLabel: 'DaroMax rasmiylashtirish',
+  },
+  {
+    rank: 2,
+    productId: 'savings-account',
+    productName: 'Jamg\'arma hisobi',
+    tagline: 'Moslashuvchanlik + faol jamg\'arish uchun daromad',
+    highlights: [
+      '📈 Stavka: yiliga 14% gacha',
+      '✅ Istalgan vaqtda to\'ldirish',
+      '✅ Foizni yo\'qotmasdan qisman yechib olish',
+      '💰 Minimum: 15 000 000 UZS',
+    ],
+    bestFor: 'Yaxshi stavka bilan pul boshqarishda erkinlik kerak bo\'lsa',
+    ctaLabel: 'Jamg\'arma hisobini ochish',
+  },
+  {
+    rank: 3,
+    productId: 'demand-deposit',
+    productName: 'Talab bo\'yicha depozit',
+    tagline: 'Tezkor kirish bilan xavfsiz saqlash',
+    highlights: [
+      '⚡ Istalgan vaqtda yechib olish',
+      '🔄 Operatsiyalarga cheklov yo\'q',
+      '💰 Minimum: 100 000 UZS',
+      '🛡️ Davlat tomonidan sug\'urtalangan',
+    ],
+    bestFor: 'Pul istalgan vaqtda kerak bo\'lishi mumkin bo\'lsa',
+    ctaLabel: 'Depozit ochish',
+  },
+];
+
+const LOAN_CATALOGUE_UZ: ProductRecommendation[] = [
+  {
+    rank: 1,
+    productId: 'consumer-loan',
+    productName: 'Iste\'mol krediti',
+    tagline: 'Har qanday maqsad uchun tezkor yechim',
+    highlights: [
+      '⚡ 1 kunda qaror',
+      '📋 Minimal hujjatlar',
+      '💳 Kartaga o\'tkazish',
+      '📅 Muddat: 36 oygacha',
+    ],
+    bestFor: 'Garovsiz xaridlar va shaxsiy ehtiyojlar uchun',
+    ctaLabel: 'Ariza topshirish',
+  },
+  {
+    rank: 2,
+    productId: 'mortgage',
+    productName: 'Ipoteka',
+    tagline: 'O\'z uyingizga yo\'l',
+    highlights: [
+      '🏠 Birlamchi va ikkilamchi bozorda uy sotib olish',
+      '📅 Muddat: 25 yilgacha',
+      '💰 Boshlang\'ich to\'lov: 20% dan',
+      '🤝 Davlat dasturlari',
+    ],
+    bestFor: 'Uzoq muddatli rejalashtirish bilan ko\'chmas mulk sotib olish uchun',
+    ctaLabel: 'Ipotekani hisoblash',
+  },
+  {
+    rank: 3,
+    productId: 'car-loan',
+    productName: 'Avtokredit',
+    tagline: 'Bugun o\'z mashinangiz rulida',
+    highlights: [
+      '🚗 Yangi va ishlatilgan avtomobillar',
+      '📅 Muddat: 60 oygacha',
+      '⚡ Tezkor rasmiylashtirish',
+      '💰 Minimal boshlang\'ich to\'lov',
+    ],
+    bestFor: 'Qulay oylik to\'lovlar bilan avtomobil sotib olish uchun',
+    ctaLabel: 'Avtokreditni rasmiylashtirish',
+  },
+];
+
+const CARD_CATALOGUE_UZ: ProductRecommendation[] = [
+  {
+    rank: 1,
+    productId: 'uzcard-classic',
+    productName: 'UzCard Classic',
+    tagline: 'Kundalik hisob-kitoblar uchun asosiy karta',
+    highlights: [
+      '🛒 Istalgan do\'konda to\'lov',
+      '💳 Mashhur kategoriyalarda keshbek',
+      '📱 Mobil ilovaga ulangan',
+      '🔄 Bank mijozlari o\'rtasida bepul o\'tkazmalar',
+    ],
+    bestFor: 'Kundalik xaridlar va xizmatlar uchun',
+    ctaLabel: 'Karta rasmiylashtirish',
+  },
+  {
+    rank: 2,
+    productId: 'visa-gold',
+    productName: 'Visa Gold',
+    tagline: 'Kengaytirilgan imkoniyatlar bilan premium karta',
+    highlights: [
+      '🌍 Xorijda to\'lov',
+      '💎 Oshirilgan keshbek',
+      '🛡️ Sayohat sug\'urtasi',
+      '🏦 Konsyerj xizmat',
+    ],
+    bestFor: 'Sayohat va valyutadagi onlayn xaridlar uchun',
+    ctaLabel: 'Visa Gold rasmiylashtirish',
+  },
+];
+
 // ─── Goal extraction from conversation context ────────────────────────────────
 
 const AMOUNT_PATTERN = /(\d[\d\s]*(?:000|млн|miln|million))/gi;
@@ -185,6 +309,7 @@ const TERM_PATTERN   = /(\d+)\s*(?:месяц|mese|month|yil|год|year|oy)/gi;
 export function extractGoal(
   intentName: string | null,
   query: string,
+  lang = 'ru',
 ): CustomerGoal {
   const base: Partial<CustomerGoal> = (intentName ? INTENT_TO_GOAL[intentName] : undefined) ?? {};
   const type: ProductType = base.type ?? inferProductType(query);
@@ -209,7 +334,7 @@ export function extractGoal(
     ? 'eur'
     : 'uzs';
 
-  return { type, priority, amountHint: amountHint ?? undefined, termMonths: termMonths ?? undefined, currency };
+  return { type, priority, amountHint: amountHint ?? undefined, termMonths: termMonths ?? undefined, currency, lang };
 }
 
 function inferProductType(query: string): ProductType {
@@ -241,6 +366,7 @@ function parseAmount(raw: string): number | undefined {
 // ─── Main recommendation logic ────────────────────────────────────────────────
 
 export function buildRecommendations(goal: CustomerGoal): RecommendationResult {
+  const isUz = (goal.lang ?? 'ru') === 'uz';
   let catalogue: ProductRecommendation[];
   let consultantNote: string;
 
@@ -254,12 +380,16 @@ export function buildRecommendations(goal: CustomerGoal): RecommendationResult {
       consultantNote = buildLoanNote(goal);
       break;
     case 'card':
-      catalogue = CARD_CATALOGUE.slice(0, 2);
-      consultantNote = '💡 Вы ищете карту для повседневных расчётов, путешествий или онлайн-покупок?';
+      catalogue = (isUz ? CARD_CATALOGUE_UZ : CARD_CATALOGUE).slice(0, 2);
+      consultantNote = isUz
+        ? '💡 Kundalik hisob-kitoblar, sayohat yoki onlayn xaridlar uchun karta izlayapsizmi?'
+        : '💡 Вы ищете карту для повседневных расчётов, путешествий или онлайн-покупок?';
       break;
     default:
       catalogue = [];
-      consultantNote = '💡 Расскажите подробнее о вашей цели — подберу лучшее решение.';
+      consultantNote = isUz
+        ? '💡 Maqsadingiz haqida ko\'proq ayting — eng yaxshi yechimni tanlab beraman.'
+        : '💡 Расскажите подробнее о вашей цели — подберу лучшее решение.';
   }
 
   return {
@@ -270,38 +400,53 @@ export function buildRecommendations(goal: CustomerGoal): RecommendationResult {
 }
 
 function rankDeposits(goal: CustomerGoal): ProductRecommendation[] {
-  const ranked = [...DEPOSIT_CATALOGUE];
+  const cat = (goal.lang ?? 'ru') === 'uz' ? DEPOSIT_CATALOGUE_UZ : DEPOSIT_CATALOGUE;
+  const ranked = [...cat];
   if (goal.priority === 'max_return') {
     return ranked; // DaroMax already #1
   }
   if (goal.priority === 'flexibility') {
     // Put savings account first
-    return [DEPOSIT_CATALOGUE[1]!, DEPOSIT_CATALOGUE[0]!, DEPOSIT_CATALOGUE[2]!];
+    return [cat[1]!, cat[0]!, cat[2]!];
   }
   return ranked;
 }
 
 function rankLoans(goal: CustomerGoal): ProductRecommendation[] {
-  if (goal.priority === 'speed') return [LOAN_CATALOGUE[0]!, LOAN_CATALOGUE[2]!, LOAN_CATALOGUE[1]!];
-  return LOAN_CATALOGUE;
+  const cat = (goal.lang ?? 'ru') === 'uz' ? LOAN_CATALOGUE_UZ : LOAN_CATALOGUE;
+  if (goal.priority === 'speed') return [cat[0]!, cat[2]!, cat[1]!];
+  return cat;
 }
 
 function buildDepositNote(goal: CustomerGoal): string {
+  const isUz = (goal.lang ?? 'ru') === 'uz';
   if (goal.amountHint) {
     const formatted = goal.amountHint.toLocaleString('ru-RU');
-    return `💡 Для суммы ~${formatted} UZS лучший вариант — **DaroMax** (18%). Вы планируете держать средства весь срок или может понадобиться досрочный доступ?`;
+    return isUz
+      ? `💡 ~${formatted} UZS summasi uchun eng yaxshi variant — **DaroMax** (18%). Pul butun muddat turishini rejalashtiryapsizmi yoki muddatdan oldin kerak bo'lishi mumkinmi?`
+      : `💡 Для суммы ~${formatted} UZS лучший вариант — **DaroMax** (18%). Вы планируете держать средства весь срок или может понадобиться досрочный доступ?`;
   }
   if (goal.priority === 'max_return') {
-    return '💡 **DaroMax** — максимальный доход (18%). Какой срок и сумму рассматриваете?';
+    return isUz
+      ? '💡 **DaroMax** — maksimal daromad (18%). Qanday muddat va summani ko\'rib chiqayapsiz?'
+      : '💡 **DaroMax** — максимальный доход (18%). Какой срок и сумму рассматриваете?';
   }
-  return '💡 Какой срок и сумму вклада вы планируете? Это поможет подобрать идеальный вариант.';
+  return isUz
+    ? '💡 Qanday muddat va summada depozit ochishni rejalashtiryapsiz? Bu ideal variant tanlashga yordam beradi.'
+    : '💡 Какой срок и сумму вклада вы планируете? Это поможет подобрать идеальный вариант.';
 }
 
 function buildLoanNote(goal: CustomerGoal): string {
+  const isUz = (goal.lang ?? 'ru') === 'uz';
   if (goal.amountHint) {
-    return `💡 На сумму ~${goal.amountHint.toLocaleString('ru-RU')} UZS — подберём оптимальный вариант. На какой срок рассматриваете?`;
+    const formatted = goal.amountHint.toLocaleString('ru-RU');
+    return isUz
+      ? `💡 ~${formatted} UZS summasi uchun — optimal variant tanlaymiz. Qanday muddatni ko'rib chiqayapsiz?`
+      : `💡 На сумму ~${formatted} UZS — подберём оптимальный вариант. На какой срок рассматриваете?`;
   }
-  return '💡 На какую сумму и срок рассматриваете кредит? Расскажите о цели — подберу лучшее предложение.';
+  return isUz
+    ? '💡 Kredit summasi va muddati qancha bo\'lishini aytib bering — eng yaxshi taklifni tanlab beraman.'
+    : '💡 На какую сумму и срок рассматриваете кредит? Расскажите о цели — подберу лучшее предложение.';
 }
 
 // ─── Multilingual rendering ───────────────────────────────────────────────────
