@@ -96,6 +96,12 @@
   transform: translateY(0) scale(0.97);
 }
 
+/* ─── Admin dark body (only on /admin routes) ────────────────────────────── */
+body.admin-mode {
+  background: #0f1117;
+  color: white;
+}
+
 /* ─── Prevent horizontal overflow everywhere inside the widget ───────────── */
 .rounded-widget,
 .rounded-widget * {
