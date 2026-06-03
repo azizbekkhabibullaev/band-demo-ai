@@ -1,4 +1,4 @@
-import React, { useRef, useState, type KeyboardEvent } from 'react';
+import React, { useRef, useState, useEffect, type KeyboardEvent } from 'react';
 
 const MAX_CHARS = 2000;
 const COUNTER_THRESHOLD = 200;
@@ -24,6 +24,12 @@ const PLACEHOLDERS: Record<string, string[]> = {
   ],
 };
 
+const HINTS: Record<string, string> = {
+  uz: 'Enter — yuborish · Shift+Enter — yangi qator',
+  ru: 'Enter — отправить · Shift+Enter — новая строка',
+  en: 'Enter to send · Shift+Enter for new line',
+};
+
 interface Props {
   onSend: (text: string) => void;
   disabled: boolean;
@@ -34,11 +40,19 @@ export function InputBar({ onSend, disabled, lang = 'ru' }: Props) {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const placeholders = PLACEHOLDERS[lang] ?? PLACEHOLDERS['ru']!;
-  // Pick placeholder based on current minute (rotates slowly)
   const placeholder = placeholders[Math.floor(Date.now() / 8000) % placeholders.length]!;
 
   const charsLeft = MAX_CHARS - value.length;
   const canSend = !disabled && value.trim().length > 0 && value.length <= MAX_CHARS;
+
+  // Auto-focus whenever input becomes enabled (widget opens, AI finishes responding)
+  useEffect(() => {
+    if (!disabled) {
+      // Small delay ensures the DOM is ready and any animations have settled
+      const t = setTimeout(() => textareaRef.current?.focus(), 60);
+      return () => clearTimeout(t);
+    }
+  }, [disabled]);
 
   function submit() {
     if (!canSend) return;
@@ -47,6 +61,8 @@ export function InputBar({ onSend, disabled, lang = 'ru' }: Props) {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
+    // Keep focus after sending
+    textareaRef.current?.focus();
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
@@ -113,10 +129,10 @@ export function InputBar({ onSend, disabled, lang = 'ru' }: Props) {
         </button>
       </div>
 
-      {/* Hint */}
+      {/* Keyboard hint — localized */}
       {!disabled && (
-        <p className="text-[9.5px] text-slate-350 mt-1 text-center hidden sm:block" style={{ color: '#cbd5e1' }}>
-          Enter to send · Shift+Enter for new line
+        <p className="text-[9.5px] mt-1 text-center hidden sm:block" style={{ color: '#cbd5e1' }}>
+          {HINTS[lang] ?? HINTS['ru']}
         </p>
       )}
     </div>

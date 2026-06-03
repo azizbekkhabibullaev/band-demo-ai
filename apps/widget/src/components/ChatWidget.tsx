@@ -11,6 +11,13 @@ interface Props {
   config: WidgetConfigResponse;
 }
 
+// ─── Trust footer copy ────────────────────────────────────────────────────────
+const TRUST_FOOTER: Record<string, string> = {
+  uz: "🔒 Javoblar ma'lumot uchun. Rasmiy qarorlar uchun mutaxassisga murojaat qiling.",
+  ru: '🔒 Ответы носят информационный характер. За официальными решениями обратитесь к специалисту.',
+  en: '🔒 Responses are informational. Consult a specialist for binding decisions.',
+};
+
 // ─── Demo sequence (CEO Demo Mode) ────────────────────────────────────────────
 const DEMO_SEQUENCE: Record<string, Array<{ delay: number; text: string }>> = {
   ru: [
@@ -52,35 +59,33 @@ function useTypewriter(text: string, speed = 22, delayStart = 900) {
 }
 
 export function ChatWidget({ config }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen]       = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState(false);
   const [lang, setLang] = useState<string>(config.languages.default ?? 'ru');
   const greetingAdded = useRef(false);
-  const demoRan = useRef(false);
+  const demoRan       = useRef(false);
 
-  const { messages, isStreaming, addGreeting, sendMessage } = useChat(config.hotline);
+  const { messages, isStreaming, addGreeting, sendMessage, clearMessages } = useChat(config.hotline);
 
-  // Resolve greeting for current lang
+  // Greeting for current language
   const greetingText = (config.greeting as Record<string, string>)[lang]
     ?? (config.greeting as Record<string, string>)[config.languages.default]
     ?? 'Welcome!';
 
-  // Typewriter for greeting
+  // Typewriter (shown before session is ready)
   const { displayed: typewriterText, done: typewriterDone } = useTypewriter(greetingText, 22, 600);
 
-  // Check demo mode from URL
   const isDemoMode = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('demo') === '1';
 
-  // ── Open widget ──────────────────────────────────────────────────────────────
+  // ── Open / close ─────────────────────────────────────────────────────────────
   const openWidget = useCallback(() => {
     setIsClosing(false);
     setIsOpen(true);
   }, []);
 
-  // ── Close widget (with exit animation) ───────────────────────────────────────
   const closeWidget = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
@@ -89,40 +94,41 @@ export function ChatWidget({ config }: Props) {
     }, 160);
   }, []);
 
-  // ── Session creation + greeting ──────────────────────────────────────────────
+  // ── Session creation ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen || sessionId || sessionError) return;
     let cancelled = false;
-
     createSession()
-      .then(id => {
-        if (cancelled) return;
-        setSessionId(id);
-        if (!greetingAdded.current) {
-          greetingAdded.current = true;
-          // Greeting will be shown via typewriter — don't addGreeting immediately
-          // We add it as a real message after typewriter finishes
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setSessionError(true);
-      });
-
+      .then(id => { if (!cancelled) setSessionId(id); })
+      .catch(() => { if (!cancelled) setSessionError(true); });
     return () => { cancelled = true; };
   }, [isOpen, sessionId, sessionError]);
 
-  // ── Add greeting message after typewriter ────────────────────────────────────
+  // ── Add greeting after typewriter finishes ───────────────────────────────────
   useEffect(() => {
     if (typewriterDone && sessionId && messages.length === 0) {
       addGreeting(greetingText);
     }
   }, [typewriterDone, sessionId, greetingText, addGreeting, messages.length]);
 
-  // ── Demo mode: auto-open + run sequence ──────────────────────────────────────
+  // ── Language change: reset greeting if conversation hasn't started ────────────
+  function handleLangChange(newLang: string) {
+    const hasUserMessages = messages.some(m => m.role === 'user');
+    setLang(newLang);
+    if (!hasUserMessages && sessionId) {
+      const newGreeting = (config.greeting as Record<string, string>)[newLang]
+        ?? (config.greeting as Record<string, string>)[config.languages.default]
+        ?? '';
+      // addGreeting replaces all messages with just the greeting
+      if (newGreeting) addGreeting(newGreeting);
+      else clearMessages();
+    }
+  }
+
+  // ── Demo mode ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isDemoMode || demoRan.current) return;
     openWidget();
-
     const seq = DEMO_SEQUENCE[lang] ?? DEMO_SEQUENCE['ru']!;
     seq.forEach(({ delay, text }) => {
       setTimeout(() => {
@@ -130,9 +136,8 @@ export function ChatWidget({ config }: Props) {
           if (prev) void sendMessage(text, prev, lang);
           return prev;
         });
-      }, delay + 2000); // +2s for widget open + greeting
+      }, delay + 2000);
     });
-
     demoRan.current = true;
   }, [isDemoMode, lang, openWidget, sendMessage]);
 
@@ -141,13 +146,9 @@ export function ChatWidget({ config }: Props) {
     await sendMessage(text, sessionId, lang);
   }
 
-  function handleLangChange(newLang: string) {
-    setLang(newLang);
-  }
-
   const enabledLangs = (config.languages.enabled as string[]) ?? [config.languages.default];
 
-  // ─── Error state ────────────────────────────────────────────────────────────
+  // ── Error state ──────────────────────────────────────────────────────────────
   const ErrorPanel = () => (
     <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
       <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
@@ -159,11 +160,10 @@ export function ChatWidget({ config }: Props) {
       </div>
       <button
         onClick={() => { setSessionError(false); setSessionId(null); greetingAdded.current = false; }}
-        className="px-5 py-2 rounded-full text-white text-sm font-semibold
-          active:scale-95 transition-transform"
+        className="px-5 py-2 rounded-full text-white text-sm font-semibold active:scale-95 transition-transform"
         style={{ background: 'linear-gradient(135deg,#2563eb,#3b82f6)' }}
       >
-        Try again
+        {lang === 'uz' ? 'Qayta urinish' : lang === 'ru' ? 'Попробовать снова' : 'Try again'}
       </button>
     </div>
   );
@@ -197,7 +197,7 @@ export function ChatWidget({ config }: Props) {
               <ErrorPanel />
             ) : (
               <>
-                {/* Typewriter greeting overlay — shown before session ready */}
+                {/* Typewriter overlay — shown before session is ready */}
                 {!sessionId && !sessionError && (
                   <div className="flex-1 flex flex-col items-start gap-2 px-4 pt-5 overflow-hidden">
                     <div className="flex gap-2 items-end">
@@ -234,13 +234,12 @@ export function ChatWidget({ config }: Props) {
                   lang={lang}
                 />
 
-                {/* Trust footer */}
+                {/* Trust footer — localized, no AI jargon */}
                 <div className="shrink-0 px-4 py-1.5 border-t border-slate-100 bg-slate-50/60
-                  rounded-b-widget flex items-center justify-between gap-2">
-                  <span className="text-[9.5px] text-slate-400 leading-tight">
-                    🔒 Responses are informational. Consult a specialist for binding decisions.
+                  rounded-b-widget">
+                  <span className="block text-[9.5px] text-slate-400 leading-tight text-center">
+                    {TRUST_FOOTER[lang] ?? TRUST_FOOTER['ru']}
                   </span>
-                  <span className="text-[9px] text-slate-300 shrink-0 font-medium">AI</span>
                 </div>
               </>
             )}

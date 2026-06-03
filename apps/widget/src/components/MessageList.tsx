@@ -6,28 +6,28 @@ import { TypingIndicator } from './TypingIndicator.tsx';
 // ─── Quick-topic chips for empty state ───────────────────────────────────────
 const TOPICS: Record<string, Array<{ icon: string; label: string; query: string }>> = {
   uz: [
-    { icon: '💰', label: 'Eng yaxshi depozit',   query: 'Eng yaxshi depozitni tanlang' },
-    { icon: '🏠', label: 'Kredit olish',          query: 'Kredit olish haqida ma\'lumot bering' },
+    { icon: '💰', label: 'Eng yaxshi depozit',    query: 'Eng yaxshi depozitni tanlang' },
+    { icon: '🏠', label: 'Kredit olish',           query: 'Kredit olish haqida ma\'lumot bering' },
     { icon: '💳', label: 'Karta rasmiylashtirish', query: 'Qanday karta rasmiylashtirish mumkin?' },
-    { icon: '📱', label: 'Ilova muammosi',         query: 'Mobil ilovada muammo bor' },
-    { icon: '🔒', label: 'Karta bloklanган',       query: 'Kartam bloklandi, nima qilaman?' },
-    { icon: '📞', label: 'Mutaxassis',             query: 'Mutaxassis bilan bog\'lanmoqchiman' },
+    { icon: '📱', label: 'Ilova muammosi',          query: 'Mobil ilovada muammo bor' },
+    { icon: '🔒', label: 'Karta bloklangan',       query: 'Kartam bloklandi, nima qilaman?' },
+    { icon: '📞', label: 'Mutaxassis',              query: 'Mutaxassis bilan bog\'lanmoqchiman' },
   ],
   ru: [
-    { icon: '💰', label: 'Лучший вклад',          query: 'Подберите лучший вклад' },
-    { icon: '🏠', label: 'Взять кредит',          query: 'Хочу взять кредит' },
-    { icon: '💳', label: 'Оформить карту',        query: 'Как оформить карту?' },
+    { icon: '💰', label: 'Лучший вклад',           query: 'Подберите лучший вклад' },
+    { icon: '🏠', label: 'Взять кредит',           query: 'Хочу взять кредит' },
+    { icon: '💳', label: 'Оформить карту',         query: 'Как оформить карту?' },
     { icon: '📱', label: 'Проблема с приложением', query: 'Проблема с мобильным приложением' },
-    { icon: '🔒', label: 'Карта заблокирована',   query: 'Моя карта заблокирована' },
-    { icon: '📞', label: 'Специалист',            query: 'Хочу поговорить со специалистом' },
+    { icon: '🔒', label: 'Карта заблокирована',    query: 'Моя карта заблокирована' },
+    { icon: '📞', label: 'Специалист',             query: 'Хочу поговорить со специалистом' },
   ],
   en: [
-    { icon: '💰', label: 'Best deposit',          query: 'Find me the best deposit' },
-    { icon: '🏠', label: 'Get a loan',            query: 'I want to get a loan' },
-    { icon: '💳', label: 'Open a card',           query: 'How to get a card?' },
-    { icon: '📱', label: 'App problem',           query: 'I have a mobile app issue' },
-    { icon: '🔒', label: 'Card blocked',          query: 'My card is blocked' },
-    { icon: '📞', label: 'Specialist',            query: 'Connect me with a specialist' },
+    { icon: '💰', label: 'Best deposit',           query: 'Find me the best deposit' },
+    { icon: '🏠', label: 'Get a loan',             query: 'I want to get a loan' },
+    { icon: '💳', label: 'Open a card',            query: 'How to get a card?' },
+    { icon: '📱', label: 'App problem',            query: 'I have a mobile app issue' },
+    { icon: '🔒', label: 'Card blocked',           query: 'My card is blocked' },
+    { icon: '📞', label: 'Specialist',             query: 'Connect me with a specialist' },
   ],
 };
 
@@ -36,10 +36,17 @@ const WELCOME: Record<string, string> = {
   ru: 'Чем могу помочь?',
   en: 'How can I help you today?',
 };
+
 const SUBTITLE: Record<string, string> = {
-  uz: 'Mashhur mavzulardan birini tanlang yoki o\'z savolingizni yozing',
+  uz: 'Mashhur mavzulardan birini tanlang yoki savolingizni yozing',
   ru: 'Выберите тему или напишите свой вопрос ниже',
   en: 'Choose a topic below or type your own question',
+};
+
+const SCROLL_LABEL: Record<string, string> = {
+  uz: '↓ Yangi xabar',
+  ru: '↓ Новое сообщение',
+  en: '↓ New message',
 };
 
 interface Props {
@@ -54,12 +61,11 @@ export function MessageList({ messages, isStreaming, lang = 'ru', onQuickReply }
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom on new messages / streaming
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming]);
 
-  // Show scroll-to-bottom button when not at bottom
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -71,63 +77,76 @@ export function MessageList({ messages, isStreaming, lang = 'ru', onQuickReply }
   const showTyping = isStreaming && lastMessage?.role === 'assistant' && lastMessage.content === '';
   const topics = TOPICS[lang] ?? TOPICS['ru']!;
 
-  const isEmpty = messages.length === 0 && !isStreaming;
+  // Show quick-action chips until user sends the first message.
+  // The greeting (assistant message) does NOT count as "started" conversation.
+  const hasUserMessages = messages.some(m => m.role === 'user');
+  const showChips = !hasUserMessages && !isStreaming && !!onQuickReply;
+  // Show full welcome header only before any messages exist
+  const showWelcomeHeader = messages.length === 0;
 
   return (
     <div className="relative flex-1 overflow-hidden">
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="h-full overflow-y-auto px-3 py-3 space-y-0"
+        className="h-full overflow-y-auto overflow-x-hidden px-3 py-3"
         style={{ background: 'linear-gradient(to bottom, #f8fafc 0%, #ffffff 60%)' }}
       >
-        {/* ── Empty / Welcome state ── */}
-        {isEmpty && (
-          <div className="flex flex-col items-center gap-4 pt-6 pb-4 animate-in fade-in duration-300">
-            {/* Logo mark */}
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-md"
-              style={{ background: 'linear-gradient(135deg,#1d4ed8,#3b82f6)' }}>
-              <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7">
-                <path d="M12 3L14 9H20L15 13L17 19L12 15L7 19L9 13L4 9H10L12 3Z" fill="white" fillOpacity="0.95"/>
-              </svg>
-            </div>
-
-            <div className="text-center space-y-1 px-2">
-              <p className="text-[15px] font-semibold text-slate-800">{WELCOME[lang] ?? WELCOME['ru']}</p>
-              <p className="text-[12px] text-slate-500">{SUBTITLE[lang] ?? SUBTITLE['ru']}</p>
-            </div>
-
-            {/* Topic chips — 2 columns */}
-            {onQuickReply && (
-              <div className="grid grid-cols-2 gap-2 w-full">
-                {topics.map(t => (
-                  <button
-                    key={t.label}
-                    onClick={() => onQuickReply(t.query)}
-                    className="topic-chip flex items-center gap-2 px-3 py-2.5 rounded-xl
-                      bg-white border border-slate-200 shadow-sm
-                      text-left hover:border-blue-300 hover:bg-blue-50 transition-colors duration-150"
-                  >
-                    <span className="text-base leading-none shrink-0">{t.icon}</span>
-                    <span className="text-[12px] font-medium text-slate-700 leading-tight">{t.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Messages ── */}
+        {/* ── Messages (always rendered) ── */}
         {messages.map((msg, idx) => (
           <MessageBubble
             key={msg.id}
             message={msg}
             onQuickReply={onQuickReply}
             isLast={idx === messages.length - 1}
+            lang={lang}
           />
         ))}
 
         {showTyping && <TypingIndicator lang={lang} />}
+
+        {/* ── Quick actions — stay visible until user sends first message ── */}
+        {showChips && (
+          <div className="flex flex-col items-center gap-3 pb-2 animate-in fade-in duration-300">
+            {/* Welcome header — only shown before any messages */}
+            {showWelcomeHeader && (
+              <>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-md mt-4"
+                  style={{ background: 'linear-gradient(135deg,#1d4ed8,#3b82f6)' }}>
+                  <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7">
+                    <path d="M12 3L14 9H20L15 13L17 19L12 15L7 19L9 13L4 9H10L12 3Z"
+                      fill="white" fillOpacity="0.95"/>
+                  </svg>
+                </div>
+                <div className="text-center space-y-1 px-2">
+                  <p className="text-[15px] font-semibold text-slate-800">
+                    {WELCOME[lang] ?? WELCOME['ru']}
+                  </p>
+                  <p className="text-[12px] text-slate-500">
+                    {SUBTITLE[lang] ?? SUBTITLE['ru']}
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* Topic chips — 2-column grid */}
+            <div className="grid grid-cols-2 gap-2 w-full">
+              {topics.map(t => (
+                <button
+                  key={t.label}
+                  onClick={() => onQuickReply(t.query)}
+                  className="topic-chip flex items-center gap-2 px-3 py-2.5 rounded-xl
+                    bg-white border border-slate-200 shadow-sm text-left
+                    hover:border-blue-300 hover:bg-blue-50 transition-colors duration-150"
+                >
+                  <span className="text-base leading-none shrink-0">{t.icon}</span>
+                  <span className="text-[12px] font-medium text-slate-700 leading-tight">{t.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div ref={bottomRef} className="h-1" />
       </div>
 
@@ -141,7 +160,7 @@ export function MessageList({ messages, isStreaming, lang = 'ru', onQuickReply }
             hover:bg-slate-50 transition-all flex items-center gap-1
             animate-in fade-in slide-in-from-bottom-1 duration-200"
         >
-          ↓ New message
+          {SCROLL_LABEL[lang] ?? SCROLL_LABEL['ru']}
         </button>
       )}
     </div>
