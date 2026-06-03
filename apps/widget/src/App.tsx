@@ -2,6 +2,21 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useWidgetConfig } from './hooks/useWidgetConfig.ts';
 import { ChatWidget } from './components/ChatWidget.tsx';
+import type { WidgetConfigResponse } from './types.ts';
+
+// Default config shown when backend is unreachable (cold start, CORS etc.)
+const DEFAULT_CONFIG: WidgetConfigResponse = {
+  tenant_id: 'ipoteka-bank',
+  name: 'Ipoteka Bank',
+  branding: { displayName: 'Ipoteka Bank', logoUrl: null, accentColor: '#1e40af' },
+  languages: { default: 'ru', enabled: ['uz', 'ru'] },
+  hotline: '1234',
+  greeting: {
+    uz: 'Salom! Ipoteka Bank xizmatiga xush kelibsiz. Qanday yordam bera olaman?',
+    ru: 'Здравствуйте! Добро пожаловать в Ипотека Банк. Чем могу помочь?',
+    en: 'Hello! Welcome to Ipoteka Bank. How can I help you?',
+  },
+};
 
 // Admin pages
 import { LoginPage }        from './admin/pages/Login.tsx';
@@ -51,20 +66,21 @@ function BankPage({ displayName }: { displayName: string }) {
 
 function WidgetRoot() {
   const state = useWidgetConfig();
-  const accentColor = state.status === 'ok' ? state.config.branding.accentColor : null;
+  // Resolve config: use fetched config if available, fall back to default so the
+  // widget is always visible even when the backend is temporarily unreachable.
+  const config: WidgetConfigResponse =
+    state.status === 'ok' ? state.config : DEFAULT_CONFIG;
 
   useEffect(() => {
-    if (accentColor) {
-      document.documentElement.style.setProperty('--accent-color', accentColor);
-    }
-  }, [accentColor]);
-
-  const displayName = state.status === 'ok' ? state.config.branding.displayName : 'Ipoteka Bank';
+    document.documentElement.style.setProperty('--accent-color', config.branding.accentColor);
+  }, [config.branding.accentColor]);
 
   return (
     <>
-      <BankPage displayName={displayName} />
-      {state.status === 'ok' && <ChatWidget config={state.config} />}
+      <BankPage displayName={config.branding.displayName} />
+      {/* Render widget on 'ok' (real config) or 'error' (fallback config).
+          Only skip on 'loading' to avoid a flash with wrong config. */}
+      {state.status !== 'loading' && <ChatWidget config={config} />}
     </>
   );
 }
