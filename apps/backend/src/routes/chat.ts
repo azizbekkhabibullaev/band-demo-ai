@@ -5,6 +5,7 @@ import type { ServerResponse } from 'node:http';
 import { orchestrate } from '../rag/orchestrator.js';
 import { buildSystemPrompt, buildConversationMessages } from '../rag/prompt.js';
 import { checkOutput } from '../rag/post-filter.js';
+import { checkDomainRelevance, getOffTopicResponse } from '../rag/domain-guard.js';
 import { streamChatCompletion } from '../llm/openai.js';
 import { getSessionWithHistory, insertMessage } from '../db/queries.js';
 import { checkSessionRateLimit } from '../middleware/rate-limit.js';
@@ -92,6 +93,29 @@ export async function chatRoute(app: FastifyInstance): Promise<void> {
         content: message,
         lang: forcedLang ?? defaultLang,
       });
+
+      // ── Domain guard (Layer 1) ───────────────────────────────────
+      const domainCheck = checkDomainRelevance(message);
+      if (!domainCheck.allowed) {
+        const guardLang = forcedLang ?? defaultLang;
+        req.appLog.info('Domain guard blocked query', {
+          tenant_id: tenant.id,
+          session_id,
+          blocked_by: domainCheck.blockedBy,
+        });
+        const offTopicText = getOffTopicResponse(guardLang);
+        // Stream as SSE deltas so the widget renders it like a normal response
+        for (const char of offTopicText) {
+          sseEvent(raw, { type: 'delta', text: char });
+        }
+        sseEvent(raw, {
+          type: 'done',
+          escalation: false,
+          meta: { routing_tier: 'domain_guard', lang: guardLang },
+        });
+        raw.end();
+        return;
+      }
 
       // ── Load customer context memory ─────────────────────────────
       let customerCtx = null;

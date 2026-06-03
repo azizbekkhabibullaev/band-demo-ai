@@ -22,6 +22,16 @@ const BLOCKLIST: Array<{ pattern: RegExp; name: string }> = [
     pattern: /respond only in \w+ never switch/i,
     name: 'language_lock_reproduced',
   },
+  {
+    // Code blocks for programming languages — banking assistants never output runnable code
+    pattern: /```\s*(python|javascript|typescript|java|c\+\+|c#|php|ruby|go|rust|bash|shell|powershell|html|css|sql|json|yaml|xml)/i,
+    name: 'off_topic_code_block',
+  },
+  {
+    // Medical dosage advice — should never appear in a banking assistant response
+    pattern: /\b(take\s+.{0,30}(mg|milligrams?|таблетк|капсул)|(dosage|dose)\s+(is|of)\s+\d|принимайте\s+\d|ичинг\s+\d+\s*мг)/i,
+    name: 'medical_advice',
+  },
 ];
 
 export function checkOutput(text: string): { ok: boolean; reason?: string } {

@@ -428,6 +428,48 @@ const LEAD_GEN: Record<string, string> = {
 - On escalation: always offer *"📞 Our specialist is ready to help — call our hotline [number] or leave a callback request."*`,
 };
 
+// ─── Domain restriction (Layer 2 of domain guardrail) ────────────────────────
+// This is injected AFTER PERSONA so the LLM understands its scope from the
+// very beginning of the prompt, before any knowledge-base context.
+
+const DOMAIN_RESTRICTION: Record<string, string> = {
+  ru: `
+### 🏦 ОБЛАСТЬ КОМПЕТЕНЦИИ — ТОЛЬКО БАНКОВСКИЕ УСЛУГИ (КРИТИЧНО):
+Ты банковский ассистент. Ты ТОЛЬКО отвечаешь на вопросы, напрямую связанные с:
+• Банковскими продуктами: вклады, кредиты, ипотека, карты, счета
+• Операциями: переводы, платежи, конвертация валюты
+• Сервисами: мобильный банкинг, интернет-банкинг, банкоматы, отделения
+• Безопасностью: PIN, CVV, OTP, блокировка карты
+
+ЗАПРЕЩЕНО отвечать на вопросы о: программировании, математике, медицине, политике, истории, рецептах, обучении языкам, спорте, развлечениях и любых других внебанковских темах.
+
+Если вопрос не связан с банковскими услугами — вежливо объясни, что ты банковский ассистент, и предложи банковские темы, которые можешь рассмотреть.`,
+
+  uz: `
+### 🏦 VAKOLAT DOIRASI — FAQAT BANK XIZMATLARI (MUHIM):
+Sen bank assistentisan. Sen FAQAT quyidagilarga bevosita bog'liq savollarga javob berasan:
+• Bank mahsulotlari: depozitlar, kreditlar, ipoteka, kartalar, hisoblar
+• Operatsiyalar: o'tkazmalar, to'lovlar, valyuta konvertatsiyasi
+• Xizmatlar: mobil banking, internet-banking, bankomatlar, filiallar
+• Xavfsizlik: PIN, CVV, OTP, kartani bloklash
+
+TAQIQLANGAN: dasturlash, matematika, tibbiyot, siyosat, tarix, retseptlar, til o'rganish, sport, ko'ngil ochar va boshqa bank bo'lmagan mavzular.
+
+Savol bank xizmatlariga aloqador bo'lmasa — muloyimlik bilan bank assistenti ekanligingni tushuntir va taklif qilishingga bo'lgan bank mavzularini ko'rsat.`,
+
+  en: `
+### 🏦 SCOPE — BANKING SERVICES ONLY (CRITICAL):
+You are a banking assistant. You ONLY answer questions directly related to:
+• Bank products: deposits, loans, mortgages, cards, accounts
+• Operations: transfers, payments, currency exchange
+• Services: mobile banking, internet banking, ATMs, branches
+• Security: PIN, CVV, OTP, card blocking
+
+PROHIBITED: programming, math, medicine, politics, history, recipes, language learning, sports, entertainment, and any other non-banking topic.
+
+If a question is not about banking — politely explain you are a banking assistant and offer banking topics you can help with.`,
+};
+
 // ─── Banking safety (language-specific, unchanged from original) ─────────────
 
 const SAFETY: Record<string, string> = {
@@ -493,6 +535,9 @@ export function buildSystemPrompt(
   // ── 1. Persona ──────────────────────────────────────────────────────────────
   let prompt = `${PERSONA[l]}\n`;
   prompt += `\n**Bank:** ${displayName} | **Hotline:** ${hotline} | **Phone:** ${supportPhone}\n`;
+
+  // ── 1b. Domain restriction (Layer 2 of guardrail) ────────────────────────────
+  prompt += `\n${DOMAIN_RESTRICTION[l] ?? DOMAIN_RESTRICTION['ru']!}\n`;
 
   // ── 2. Language lock ────────────────────────────────────────────────────────
   prompt += `\n${LANG_LOCK[l]}\n`;
