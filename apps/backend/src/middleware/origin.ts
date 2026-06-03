@@ -32,7 +32,7 @@ export async function originPlugin(app: FastifyInstance): Promise<void> {
     const origin = req.headers.origin;
     if (typeof origin === 'string') {
       reply.header('access-control-allow-origin', origin);
-      reply.header('access-control-allow-methods', 'GET, POST, OPTIONS');
+      reply.header('access-control-allow-methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
       reply.header('access-control-allow-headers', 'content-type, x-request-id, authorization');
       reply.header('access-control-max-age', '600');
     }

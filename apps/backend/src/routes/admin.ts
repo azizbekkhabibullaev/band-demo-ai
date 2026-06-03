@@ -12,7 +12,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { getPool } from '../db/client.js';
 import { invalidateFaqCache } from '../rag/faq-engine.js';
 import { invalidateIntentCache } from '../rag/intent-engine.js';
-import { getLeads, updateLeadStatus, type LeadStatus } from '../features/leads/service.js';
+import { getLeads, updateLeadStatus, getLeadTimeline, type LeadStatus } from '../features/leads/service.js';
 import { getDashboardStats } from '../analytics/tracker.js';
 import { adminLogin, verifyAdminJwt, extractAdminToken } from '../admin/auth.js';
 import {
@@ -364,7 +364,7 @@ export async function adminRoute(app: FastifyInstance): Promise<void> {
   app.get('/api/admin/leads', async (req, reply) => {
     const claims = requireAdmin(req, reply);
     if (!claims) return;
-    const { status, limit = '50', offset = '0' } = req.query as Record<string, string>;
+    const { status, limit = '200', offset = '0' } = req.query as Record<string, string>;
     const leads = await getLeads(claims.tenant, {
       limit: parseInt(limit, 10),
       offset: parseInt(offset, 10),
@@ -375,13 +375,30 @@ export async function adminRoute(app: FastifyInstance): Promise<void> {
 
   // PATCH /api/admin/leads/:id/status
   app.patch('/api/admin/leads/:id/status', async (req, reply) => {
+    addAdminCors(req, reply);
     const claims = requireAdmin(req, reply);
     if (!claims) return;
     const { id } = req.params as { id: string };
     const { status } = req.body as { status: LeadStatus };
     if (!status) return reply.code(400).send({ error: 'status required' });
-    const ok = await updateLeadStatus(id, claims.tenant, status);
-    return ok ? reply.send({ ok: true }) : reply.code(404).send({ error: 'lead not found' });
+    const result = await updateLeadStatus(id, claims.tenant, status);
+    if (!result.ok) {
+      if (result.error === 'not_found')
+        return reply.code(404).send({ error: 'Лид не найден' });
+      if (result.error === 'invalid_transition')
+        return reply.code(422).send({ error: `Недопустимый переход из статуса "${result.fromStatus}" в "${status}"` });
+      return reply.code(500).send({ error: 'Ошибка обновления' });
+    }
+    return reply.send({ ok: true, fromStatus: result.fromStatus, toStatus: status });
+  });
+
+  // GET /api/admin/leads/:id/timeline
+  app.get('/api/admin/leads/:id/timeline', async (req, reply) => {
+    const claims = requireAdmin(req, reply);
+    if (!claims) return;
+    const { id } = req.params as { id: string };
+    const timeline = await getLeadTimeline(id, claims.tenant);
+    return reply.send({ timeline });
   });
 
   // POST /api/admin/cache/invalidate

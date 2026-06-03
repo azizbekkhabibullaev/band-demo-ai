@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AdminLayout } from '../components/Layout.tsx';
 import { getConversations, getConversationMessages, type ConversationSummary, type ChatMessage } from '../api/client.ts';
 
@@ -19,6 +20,10 @@ function timeAgo(iso: string): string {
 }
 
 export function ConversationsPage() {
+  const location = useLocation();
+  // Support deep-link from Leads page: navigate('/admin/conversations', { state: { sessionId } })
+  const deepLinkSessionId = (location.state as { sessionId?: string } | null)?.sessionId ?? null;
+
   const [convs, setConvs] = useState<ConversationSummary[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -28,15 +33,24 @@ export function ConversationsPage() {
   const [selected, setSelected] = useState<ConversationSummary | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
+  const [deepLinked, setDeepLinked] = useState(false);
 
   const PAGE_SIZE = 20;
 
   useEffect(() => {
     setLoading(true);
     getConversations({ limit: PAGE_SIZE, offset: page * PAGE_SIZE, lang: lang || undefined, search: search || undefined })
-      .then(res => { setConvs(res.conversations); setTotal(res.total); })
+      .then(res => {
+        setConvs(res.conversations);
+        setTotal(res.total);
+        // Auto-open if deep-linked from Leads page
+        if (deepLinkSessionId && !deepLinked) {
+          const target = res.conversations.find(c => c.sessionId === deepLinkSessionId);
+          if (target) { void openConv(target); setDeepLinked(true); }
+        }
+      })
       .finally(() => setLoading(false));
-  }, [page, lang, search]);
+  }, [page, lang, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function openConv(conv: ConversationSummary) {
     setSelected(conv);

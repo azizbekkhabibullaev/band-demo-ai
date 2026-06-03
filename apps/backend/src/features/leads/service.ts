@@ -116,18 +116,98 @@ export async function getLeads(
   return rows.map(mapLead);
 }
 
+// ─── Pipeline transition rules ────────────────────────────────────────────────
+const ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
+  new:       ['contacted', 'closed'],
+  contacted: ['qualified', 'closed'],
+  qualified: ['converted', 'closed'],
+  converted: [],
+  closed:    [],
+};
+
+export function isValidTransition(from: LeadStatus, to: LeadStatus): boolean {
+  return (ALLOWED_TRANSITIONS[from] ?? []).includes(to);
+}
+
 export async function updateLeadStatus(
   id: string,
   tenantId: string,
   status: LeadStatus,
-): Promise<boolean> {
+): Promise<{ ok: boolean; error?: string; fromStatus?: LeadStatus }> {
   const pool = getPool();
-  const { rowCount } = await pool.query(
-    `UPDATE leads SET status = $1, updated_at = now()
-     WHERE id = $2 AND tenant_id = $3`,
-    [status, id, tenantId],
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Fetch current status
+    const { rows } = await client.query<{ status: string }>(
+      `SELECT status FROM leads WHERE id = $1 AND tenant_id = $2 FOR UPDATE`,
+      [id, tenantId],
+    );
+    if (rows.length === 0) {
+      await client.query('ROLLBACK');
+      return { ok: false, error: 'not_found' };
+    }
+    const fromStatus = rows[0]!.status as LeadStatus;
+
+    // Validate transition
+    if (!isValidTransition(fromStatus, status)) {
+      await client.query('ROLLBACK');
+      return { ok: false, error: 'invalid_transition', fromStatus };
+    }
+
+    // Update the lead
+    await client.query(
+      `UPDATE leads SET status = $1, updated_at = now() WHERE id = $2 AND tenant_id = $3`,
+      [status, id, tenantId],
+    );
+
+    // Record history
+    await client.query(
+      `INSERT INTO lead_status_history (lead_id, tenant_id, from_status, to_status)
+       VALUES ($1, $2, $3, $4)`,
+      [id, tenantId, fromStatus, status],
+    );
+
+    await client.query('COMMIT');
+    return { ok: true, fromStatus };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+// ─── Lead timeline ────────────────────────────────────────────────────────────
+
+export interface LeadTimelineEntry {
+  id:         number;
+  fromStatus: string | null;
+  toStatus:   string;
+  note:       string | null;
+  createdAt:  Date;
+}
+
+export async function getLeadTimeline(
+  leadId: string,
+  tenantId: string,
+): Promise<LeadTimelineEntry[]> {
+  const pool = getPool();
+  const { rows } = await pool.query(
+    `SELECT id, from_status, to_status, note, created_at
+     FROM lead_status_history
+     WHERE lead_id = $1 AND tenant_id = $2
+     ORDER BY created_at ASC`,
+    [leadId, tenantId],
   );
-  return (rowCount ?? 0) > 0;
+  return rows.map(r => ({
+    id:         r['id'] as number,
+    fromStatus: r['from_status'] as string | null,
+    toStatus:   r['to_status'] as string,
+    note:       r['note'] as string | null,
+    createdAt:  r['created_at'] as Date,
+  }));
 }
 
 // ─── Product interest normaliser ──────────────────────────────────────────────

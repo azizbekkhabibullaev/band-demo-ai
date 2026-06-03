@@ -208,11 +208,27 @@ export async function getLeads(opts?: { status?: string; limit?: number }): Prom
   return request(`/api/admin/leads?${params}`);
 }
 
-export async function updateLeadStatus(id: string, status: string): Promise<void> {
-  await request(`/api/admin/leads/${id}/status`, {
+export async function updateLeadStatus(
+  id: string,
+  status: string,
+): Promise<{ ok: boolean; fromStatus?: string; toStatus?: string }> {
+  return request(`/api/admin/leads/${id}/status`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),
   });
+}
+
+export interface LeadTimelineEntry {
+  id:         number;
+  fromStatus: string | null;
+  toStatus:   string;
+  note:       string | null;
+  createdAt:  string;
+}
+
+export async function getLeadTimeline(leadId: string): Promise<LeadTimelineEntry[]> {
+  const data = await request<{ timeline: LeadTimelineEntry[] }>(`/api/admin/leads/${leadId}/timeline`);
+  return data.timeline;
 }
 
 // ─── Escalations ─────────────────────────────────────────────────────────────
