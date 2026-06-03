@@ -2,5 +2,6 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build:widget",
   "outputDirectory": "apps/widget/dist",
-  "framework": null
+  "framework": null,
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
