@@ -5,6 +5,7 @@ allowedOrigins:
   - "https://ipotekabank.uz"
   - "https://band-demo-ai.vercel.app"
   - "https://bank-chatbot-master.vercel.app"
+  - "https://ipoteka-chat-ai.vercel.app"
 
 config:
   hotline: "1233"
