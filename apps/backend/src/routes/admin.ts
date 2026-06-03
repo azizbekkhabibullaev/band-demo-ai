@@ -28,6 +28,7 @@ import {
   runEscalationEngine,
   generateAiInsights,
   getLeadFunnel,
+  getQuickActionStats,
 } from '../admin/intelligence.js';
 
 // ─── CORS helper for admin routes ────────────────────────────────────────────
@@ -347,6 +348,15 @@ export async function adminRoute(app: FastifyInstance): Promise<void> {
     if (!claims) return;
     const { days = '7' } = req.query as Record<string, string>;
     const stats = await getDashboardStats(claims.tenant, parseInt(days, 10));
+    return reply.send(stats);
+  });
+
+  // GET /api/admin/quick-action-stats?days=7
+  app.get('/api/admin/quick-action-stats', async (req, reply) => {
+    const claims = requireAdmin(req, reply);
+    if (!claims) return;
+    const { days = '7' } = req.query as Record<string, string>;
+    const stats = await getQuickActionStats(claims.tenant, parseInt(days, 10));
     return reply.send(stats);
   });
 

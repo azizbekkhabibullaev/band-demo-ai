@@ -395,6 +395,7 @@ export function ChatWidget({ config }: Props) {
                     messages={messages}
                     isStreaming={isStreaming}
                     lang={lang}
+                    sessionId={sessionId}
                     onQuickReply={handleSend}
                   />
                 )}

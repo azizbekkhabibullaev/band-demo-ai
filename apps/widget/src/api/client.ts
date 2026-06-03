@@ -46,6 +46,31 @@ export async function submitLead(payload: LeadPayload): Promise<void> {
   });
 }
 
+export interface QuickActionClickPayload {
+  sessionId?:  string;
+  messageId?:  string;
+  intent?:     string;
+  lang?:       string;
+  chipLabel:   string;
+  chipType?:   string;
+}
+
+export async function trackQuickActionClick(payload: QuickActionClickPayload): Promise<void> {
+  await fetch(`${BASE}/api/analytics/quick-action`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tenant_id:  TENANT_ID,
+      session_id: payload.sessionId,
+      message_id: payload.messageId,
+      intent:     payload.intent,
+      lang:       payload.lang,
+      chip_label: payload.chipLabel,
+      chip_type:  payload.chipType,
+    }),
+  });
+}
+
 export async function streamChat(
   sessionId: string,
   message: string,

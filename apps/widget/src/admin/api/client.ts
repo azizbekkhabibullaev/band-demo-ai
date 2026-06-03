@@ -254,3 +254,24 @@ export async function getIntents(): Promise<{ intents: IntentEntry[] }> {
 export async function getStats() {
   return request('/api/admin/stats');
 }
+
+// ─── Quick action analytics ───────────────────────────────────────────────────
+
+export interface QuickActionStat {
+  chipLabel: string;
+  intent:    string | null;
+  lang:      string | null;
+  chipType:  string | null;
+  clicks:    number;
+}
+
+export interface QuickActionStats {
+  topChips:       QuickActionStat[];
+  clicksByIntent: { intent: string; clicks: number }[];
+  clicksByLang:   { lang: string; clicks: number }[];
+  totalClicks:    number;
+}
+
+export async function getQuickActionStats(days = 7): Promise<QuickActionStats> {
+  return request(`/api/admin/quick-action-stats?days=${days}`);
+}

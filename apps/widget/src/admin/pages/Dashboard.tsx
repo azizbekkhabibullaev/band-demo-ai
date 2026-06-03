@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { AdminLayout } from '../components/Layout.tsx';
 import { KpiCard } from '../components/KpiCard.tsx';
 import { LineChart } from '../components/MiniChart.tsx';
-import { getDashboard, getComplaints, type DashboardData, type ComplaintStat } from '../api/client.ts';
+import { getDashboard, getComplaints, getQuickActionStats, type DashboardData, type ComplaintStat, type QuickActionStats } from '../api/client.ts';
 
 const PERIOD_OPTIONS = [
   { label: 'Сегодня',    days: 1 },
@@ -30,14 +30,15 @@ export function DashboardPage() {
   const [days, setDays] = useState(7);
   const [data, setData] = useState<DashboardData | null>(null);
   const [complaints, setComplaints] = useState<ComplaintStat[]>([]);
+  const [qaStats, setQaStats] = useState<QuickActionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     setLoading(true);
     setError('');
-    Promise.all([getDashboard(days), getComplaints(days)])
-      .then(([d, c]) => { setData(d); setComplaints(c.complaints); })
+    Promise.all([getDashboard(days), getComplaints(days), getQuickActionStats(days)])
+      .then(([d, c, qa]) => { setData(d); setComplaints(c.complaints); setQaStats(qa); })
       .catch(e => setError(String(e)))
       .finally(() => setLoading(false));
   }, [days]);
@@ -302,6 +303,56 @@ export function DashboardPage() {
                 )}
               </div>
             </div>
+
+            {/* ── Quick action analytics ── */}
+            {qaStats && qaStats.totalClicks > 0 && (
+              <div className="bg-[#161b27] rounded-xl border border-white/[0.07] p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[13px] font-semibold text-white">⚡ Топ быстрых действий</h3>
+                  <span className="text-[11px] text-white/40">{qaStats.totalClicks} кликов</span>
+                </div>
+
+                {/* Top chips */}
+                <div className="space-y-2 mb-4">
+                  {qaStats.topChips.slice(0, 5).map((chip, i) => {
+                    const maxClicks = qaStats.topChips[0]?.clicks ?? 1;
+                    const pct = Math.round((chip.clicks / maxClicks) * 100);
+                    return (
+                      <div key={chip.chipLabel} className="flex items-center gap-3">
+                        <span className="text-[10px] text-white/30 w-4 shrink-0 text-center">{i + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[12px] text-white/80 truncate">{chip.chipLabel}</span>
+                            <span className="text-[11px] text-white/50 shrink-0 ml-2">{chip.clicks}</span>
+                          </div>
+                          <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-700"
+                              style={{
+                                width: `${pct}%`,
+                                background: chip.chipType === 'lead' ? '#34d399' : '#3b82f6',
+                                opacity: 0.7,
+                              }} />
+                          </div>
+                        </div>
+                        {chip.chipType === 'lead' && (
+                          <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full shrink-0">ЛИД</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Clicks by language */}
+                <div className="flex items-center gap-3 pt-3 border-t border-white/[0.05]">
+                  {qaStats.clicksByLang.map(l => (
+                    <div key={l.lang} className="flex items-center gap-1.5 text-[11px] text-white/50">
+                      <span>{l.lang === 'uz' ? '🇺🇿' : '🇷🇺'}</span>
+                      <span>{l.lang.toUpperCase()}: {l.clicks}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
 

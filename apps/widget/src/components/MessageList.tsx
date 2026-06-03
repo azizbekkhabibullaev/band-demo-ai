@@ -39,13 +39,14 @@ const SCROLL_LABEL: Record<string, string> = {
 };
 
 interface Props {
-  messages: Message[];
-  isStreaming: boolean;
-  lang?: string;
+  messages:     Message[];
+  isStreaming:  boolean;
+  lang?:        string;
+  sessionId?:   string;
   onQuickReply?: (text: string) => void;
 }
 
-export function MessageList({ messages, isStreaming, lang = 'ru', onQuickReply }: Props) {
+export function MessageList({ messages, isStreaming, lang = 'ru', sessionId, onQuickReply }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
@@ -89,6 +90,7 @@ export function MessageList({ messages, isStreaming, lang = 'ru', onQuickReply }
             onQuickReply={onQuickReply}
             isLast={idx === messages.length - 1}
             lang={lang}
+            sessionId={sessionId}
           />
         ))}
 

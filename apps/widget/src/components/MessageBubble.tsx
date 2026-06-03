@@ -2,13 +2,16 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 import type { Message } from '../hooks/useChat.ts';
+import type { QuickAction } from '../utils/quickActions.ts';
 import { ProductCard, parseMessageBlocks } from './ProductCard.tsx';
+import { trackQuickActionClick } from '../api/client.ts';
 
 interface Props {
-  message: Message;
+  message:      Message;
   onQuickReply?: (text: string) => void;
-  isLast?: boolean;
-  lang?: string;
+  isLast?:      boolean;
+  lang?:        string;
+  sessionId?:   string;
 }
 
 // ─── Localized strings ────────────────────────────────────────────────────────
@@ -24,12 +27,6 @@ const STRINGS = {
     specialist: '🤝 Соединение со специалистом',
     call:       '📞 Позвонить',
     callback:   '📋 Заказать обратный звонок',
-  },
-  en: {
-    sourceKb:   '🏦 Ipoteka Bank knowledge base',
-    specialist: '🤝 Connecting with a specialist',
-    call:       '📞 Call',
-    callback:   '📋 Request a callback',
   },
 } as const;
 
@@ -76,22 +73,58 @@ function EscalationCTA({ hotline, lang }: { hotline: string; lang: string }) {
   );
 }
 
-// ─── Quick reply chips ────────────────────────────────────────────────────────
-function QuickReplies({ replies, onSelect }: { replies: string[]; onSelect: (t: string) => void }) {
-  if (!replies.length) return null;
+// ─── Context-aware quick action chips ────────────────────────────────────────
+interface ChipsProps {
+  actions:   QuickAction[];
+  messageId: string;
+  intent?:   string;
+  lang:      string;
+  sessionId?: string;
+  onSelect:  (query: string) => void;
+}
+
+function QuickActionChips({ actions, messageId, intent, lang, sessionId, onSelect }: ChipsProps) {
+  if (!actions.length) return null;
+
+  function handleClick(action: QuickAction) {
+    // Fire analytics — best effort, non-blocking
+    trackQuickActionClick({
+      sessionId,
+      messageId,
+      intent,
+      lang,
+      chipLabel: action.label,
+      chipType: action.type,
+    }).catch(() => {});
+    onSelect(action.query);
+  }
+
+  const isLead = actions.some(a => a.type === 'lead');
+
   return (
-    <div className="flex flex-wrap gap-1.5 mt-2">
-      {replies.map(r => (
-        <button
-          key={r}
-          onClick={() => onSelect(r.replace(/^[\p{Emoji}\s]+/u, '').trim())}
-          className="topic-chip text-[11.5px] font-medium text-blue-700 bg-blue-50
-            border border-blue-200 rounded-full px-2.5 py-1 hover:bg-blue-100
-            transition-colors duration-100"
-        >
-          {r}
-        </button>
-      ))}
+    <div className="flex flex-col gap-1.5 mt-2">
+      {isLead && (
+        <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wide pl-0.5">
+          {lang === 'uz' ? 'Navbatdagi qadam' : 'Следующий шаг'}
+        </span>
+      )}
+      <div className="flex flex-wrap gap-1.5">
+        {actions.map(action => (
+          <button
+            key={action.label}
+            onClick={() => handleClick(action)}
+            className={[
+              'text-[11.5px] font-medium rounded-xl px-3 py-1.5 transition-all duration-100',
+              'border active:scale-[0.97] whitespace-nowrap',
+              action.type === 'lead'
+                ? 'text-blue-700 bg-blue-600/10 border-blue-300 hover:bg-blue-100 hover:border-blue-400'
+                : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm',
+            ].join(' ')}
+          >
+            {action.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -130,7 +163,7 @@ const mdComponents: Components = {
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export function MessageBubble({ message, onQuickReply, isLast = false, lang = 'ru' }: Props) {
+export function MessageBubble({ message, onQuickReply, isLast = false, lang = 'ru', sessionId }: Props) {
 
   // System messages (escalation pill)
   if (message.role === 'system') {
@@ -218,9 +251,16 @@ export function MessageBubble({ message, onQuickReply, isLast = false, lang = 'r
           )}
         </div>
 
-        {/* Quick replies — last assistant message only */}
-        {!message.streaming && isLast && (message.suggestedReplies?.length ?? 0) > 0 && onQuickReply && (
-          <QuickReplies replies={message.suggestedReplies!} onSelect={onQuickReply} />
+        {/* Context-aware quick action chips — last assistant message only */}
+        {!message.streaming && isLast && (message.quickActions?.length ?? 0) > 0 && onQuickReply && (
+          <QuickActionChips
+            actions={message.quickActions!}
+            messageId={message.id}
+            intent={message.intent}
+            lang={lang}
+            sessionId={sessionId}
+            onSelect={onQuickReply}
+          />
         )}
       </div>
     </div>

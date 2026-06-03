@@ -277,6 +277,7 @@ export async function chatRoute(app: FastifyInstance): Promise<void> {
           routing_tier: result.routingTier,
           confidence: result.confidence,
           lang: resolvedLang,
+          intent: result.intent?.name,
         },
       });
       raw.end();

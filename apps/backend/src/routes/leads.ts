@@ -9,6 +9,7 @@ import type { FastifyInstance } from 'fastify';
 import { createLead } from '../features/leads/service.js';
 import { trackEvent } from '../analytics/tracker.js';
 import { updateContext } from '../memory/context.js';
+import { getPool } from '../db/client.js';
 
 export async function leadsRoute(app: FastifyInstance): Promise<void> {
   /**
@@ -78,5 +79,47 @@ export async function leadsRoute(app: FastifyInstance): Promise<void> {
       lead_id: lead.id,
       message: 'Lead captured successfully',
     });
+  });
+
+  /**
+   * POST /api/analytics/quick-action
+   *
+   * Lightweight click tracking — called by the widget when a quick action chip is clicked.
+   * Best-effort; never blocks the user flow.
+   *
+   * Body: { tenant_id, session_id?, message_id?, intent?, lang?, chip_label, chip_type? }
+   */
+  app.post('/api/analytics/quick-action', async (req, reply) => {
+    if (!req.tenant) return reply.code(404).send({ ok: false });
+    const body = req.body as {
+      session_id?: string;
+      message_id?: string;
+      intent?: string;
+      lang?: string;
+      chip_label?: string;
+      chip_type?: string;
+    };
+    if (!body.chip_label) return reply.code(400).send({ ok: false });
+
+    try {
+      await getPool().query(
+        `INSERT INTO quick_action_clicks
+           (tenant_id, session_id, message_id, intent, lang, chip_label, chip_type)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [
+          req.tenant.id,
+          body.session_id ?? null,
+          body.message_id ?? null,
+          body.intent ?? null,
+          body.lang ?? null,
+          body.chip_label,
+          body.chip_type ?? null,
+        ],
+      );
+    } catch {
+      // non-critical — ignore DB errors silently
+    }
+
+    return reply.code(201).send({ ok: true });
   });
 }

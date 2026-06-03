@@ -763,3 +763,75 @@ Format: Return ONLY a JSON array of 5 strings. Example: ["Insight 1.", "Insight 
 
   return fallbacks.slice(0, 5);
 }
+
+// ─── Quick Action Analytics ───────────────────────────────────────────────────
+
+export interface QuickActionStat {
+  chipLabel: string;
+  intent:    string | null;
+  lang:      string | null;
+  chipType:  string | null;
+  clicks:    number;
+}
+
+export interface QuickActionStats {
+  topChips:       QuickActionStat[];
+  clicksByIntent: { intent: string; clicks: number }[];
+  clicksByLang:   { lang: string; clicks: number }[];
+  totalClicks:    number;
+}
+
+export async function getQuickActionStats(tenantId: string, days = 7): Promise<QuickActionStats> {
+  const pool = getPool();
+  const since = new Date(Date.now() - days * 86400_000).toISOString();
+
+  const [topRows, intentRows, langRows] = await Promise.all([
+    pool.query(
+      `SELECT chip_label, intent, lang, chip_type, COUNT(*) AS clicks
+       FROM quick_action_clicks
+       WHERE tenant_id = $1 AND created_at >= $2
+       GROUP BY chip_label, intent, lang, chip_type
+       ORDER BY clicks DESC
+       LIMIT 10`,
+      [tenantId, since],
+    ),
+    pool.query(
+      `SELECT COALESCE(intent, 'unknown') AS intent, COUNT(*) AS clicks
+       FROM quick_action_clicks
+       WHERE tenant_id = $1 AND created_at >= $2
+       GROUP BY intent
+       ORDER BY clicks DESC`,
+      [tenantId, since],
+    ),
+    pool.query(
+      `SELECT COALESCE(lang, 'ru') AS lang, COUNT(*) AS clicks
+       FROM quick_action_clicks
+       WHERE tenant_id = $1 AND created_at >= $2
+       GROUP BY lang
+       ORDER BY clicks DESC`,
+      [tenantId, since],
+    ),
+  ]);
+
+  const topChips: QuickActionStat[] = topRows.rows.map(r => ({
+    chipLabel: r['chip_label'] as string,
+    intent:    r['intent'] as string | null,
+    lang:      r['lang'] as string | null,
+    chipType:  r['chip_type'] as string | null,
+    clicks:    parseInt(r['clicks'] as string, 10),
+  }));
+
+  const clicksByIntent = intentRows.rows.map(r => ({
+    intent: r['intent'] as string,
+    clicks: parseInt(r['clicks'] as string, 10),
+  }));
+
+  const clicksByLang = langRows.rows.map(r => ({
+    lang:   r['lang'] as string,
+    clicks: parseInt(r['clicks'] as string, 10),
+  }));
+
+  const totalClicks = topChips.reduce((s, c) => s + c.clicks, 0);
+
+  return { topChips, clicksByIntent, clicksByLang, totalClicks };
+}
