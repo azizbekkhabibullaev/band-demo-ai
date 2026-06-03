@@ -21,32 +21,21 @@ const TOPICS: Record<string, Array<{ icon: string; label: string; query: string 
     { icon: '🔒', label: 'Карта заблокирована',    query: 'Моя карта заблокирована' },
     { icon: '📞', label: 'Специалист',             query: 'Хочу поговорить со специалистом' },
   ],
-  en: [
-    { icon: '💰', label: 'Best deposit',           query: 'Find me the best deposit' },
-    { icon: '🏠', label: 'Get a loan',             query: 'I want to get a loan' },
-    { icon: '💳', label: 'Open a card',            query: 'How to get a card?' },
-    { icon: '📱', label: 'App problem',            query: 'I have a mobile app issue' },
-    { icon: '🔒', label: 'Card blocked',           query: 'My card is blocked' },
-    { icon: '📞', label: 'Specialist',             query: 'Connect me with a specialist' },
-  ],
 };
 
 const WELCOME: Record<string, string> = {
   uz: 'Qanday yordam bera olaman?',
   ru: 'Чем могу помочь?',
-  en: 'How can I help you today?',
 };
 
 const SUBTITLE: Record<string, string> = {
   uz: 'Mashhur mavzulardan birini tanlang yoki savolingizni yozing',
   ru: 'Выберите тему или напишите свой вопрос ниже',
-  en: 'Choose a topic below or type your own question',
 };
 
 const SCROLL_LABEL: Record<string, string> = {
   uz: '↓ Yangi xabar',
   ru: '↓ Новое сообщение',
-  en: '↓ New message',
 };
 
 interface Props {

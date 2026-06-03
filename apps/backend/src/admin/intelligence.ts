@@ -530,6 +530,40 @@ export async function getDailyVolume(
   }));
 }
 
+// ─── Lead Funnel ─────────────────────────────────────────────────────────────
+
+export interface LeadFunnel {
+  new: number;
+  contacted: number;
+  qualified: number;
+  converted: number;
+  closed: number;
+  hot: number;
+  warm: number;
+  total: number;
+}
+
+export async function getLeadFunnel(tenantId: string): Promise<LeadFunnel> {
+  const pool = getPool();
+  const { rows } = await pool.query(
+    `SELECT status, COUNT(*) AS cnt,
+            SUM(CASE WHEN lead_score >= 90 THEN 1 ELSE 0 END) AS hot,
+            SUM(CASE WHEN lead_score >= 70 AND lead_score < 90 THEN 1 ELSE 0 END) AS warm
+     FROM leads WHERE tenant_id=$1 GROUP BY status`,
+    [tenantId],
+  );
+  const result: LeadFunnel = { new: 0, contacted: 0, qualified: 0, converted: 0, closed: 0, hot: 0, warm: 0, total: 0 };
+  for (const row of rows) {
+    const status = row['status'] as string;
+    const cnt = parseInt(row['cnt'] as string, 10);
+    if (status in result) (result as unknown as Record<string, number>)[status] = cnt;
+    result.hot += parseInt(row['hot'] as string, 10) || 0;
+    result.warm += parseInt(row['warm'] as string, 10) || 0;
+    result.total += cnt;
+  }
+  return result;
+}
+
 // ─── Escalation CRUD ─────────────────────────────────────────────────────────
 
 export async function getEscalations(tenantId: string, status?: string) {

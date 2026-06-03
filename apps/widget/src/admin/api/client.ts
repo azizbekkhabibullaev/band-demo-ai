@@ -97,12 +97,24 @@ export interface Escalation {
   updatedAt: string;
 }
 
+export interface LeadFunnel {
+  new: number;
+  contacted: number;
+  qualified: number;
+  converted: number;
+  closed: number;
+  hot: number;   // score >= 90
+  warm: number;  // score 70-89
+  total: number;
+}
+
 export interface DashboardData {
   kpi: KpiSnapshot;
   topics: TopicStat[];
   trends: TrendItem[];
   volume: VolumePoint[];
   escalations: Escalation[];
+  leadFunnel?: LeadFunnel;
   days: number;
 }
 
@@ -175,13 +187,17 @@ export async function getConversationMessages(sessionId: string): Promise<{ mess
 
 export interface Lead {
   id: string;
+  sessionId: string | null;
   leadType: string;
   status: string;
+  fullName: string | null;
   phone: string | null;
   productInterest: string | null;
+  interestType: string | null;
   message: string | null;
   lang: string;
   intentName: string | null;
+  leadScore: number;
   createdAt: string;
 }
 

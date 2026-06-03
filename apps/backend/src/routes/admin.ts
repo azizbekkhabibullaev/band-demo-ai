@@ -27,6 +27,7 @@ import {
   createEscalation,
   runEscalationEngine,
   generateAiInsights,
+  getLeadFunnel,
 } from '../admin/intelligence.js';
 
 // ─── CORS helper for admin routes ────────────────────────────────────────────
@@ -164,15 +165,16 @@ export async function adminRoute(app: FastifyInstance): Promise<void> {
     const { days = '7' } = req.query as Record<string, string>;
     const d = parseInt(days, 10);
 
-    const [kpi, topics, trends, volume, escalations] = await Promise.all([
+    const [kpi, topics, trends, volume, escalations, leadFunnel] = await Promise.all([
       getKpiSnapshot(claims.tenant, d),
       getTopicStats(claims.tenant, d),
       getTrendItems(claims.tenant, d),
       getDailyVolume(claims.tenant, d),
       getEscalations(claims.tenant, 'open'),
+      getLeadFunnel(claims.tenant),
     ]);
 
-    return reply.send({ kpi, topics, trends, volume, escalations, days: d });
+    return reply.send({ kpi, topics, trends, volume, escalations, leadFunnel, days: d });
   });
 
   // ══════════════════════════════════════════════════════════════════════════

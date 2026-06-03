@@ -22,6 +22,30 @@ export async function createSession(): Promise<string> {
   return data.session_id;
 }
 
+export interface LeadPayload {
+  phone: string;
+  fullName?: string;
+  interestType?: string;
+  sessionId?: string;
+  lang?: string;
+}
+
+export async function submitLead(payload: LeadPayload): Promise<void> {
+  await fetch(`${BASE}/api/leads`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tenant_id: TENANT_ID,
+      phone: payload.phone,
+      full_name: payload.fullName || undefined,
+      interest_type: payload.interestType || undefined,
+      session_id: payload.sessionId || undefined,
+      language: payload.lang || 'ru',
+      lead_type: 'callback',
+    }),
+  });
+}
+
 export async function streamChat(
   sessionId: string,
   message: string,

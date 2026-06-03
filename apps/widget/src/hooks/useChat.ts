@@ -31,28 +31,24 @@ const SUGGESTED_REPLIES: Record<string, Record<string, string[]>> = {
   deposit: {
     uz: ['💰 Minimal summa?', '📅 Muddatdan oldin?', '✅ Qanday hujjatlar?'],
     ru: ['💰 Минимальная сумма?', '📅 Досрочное снятие?', '✅ Нужные документы?'],
-    en: ['💰 Minimum amount?', '📅 Early withdrawal?', '✅ Required docs?'],
   },
   loan: {
     uz: ['📋 Hujjatlar ro\'yxati?', '📊 Oylik to\'lov?', '⚡ Tez ko\'rib chiqish?'],
     ru: ['📋 Список документов?', '📊 Ежемесячный платёж?', '⚡ Срочное рассмотрение?'],
-    en: ['📋 Documents needed?', '📊 Monthly payment?', '⚡ Fast approval?'],
   },
   card: {
     uz: ['💳 Karta turlari?', '🌍 Xorijda ishlatish?', '✅ Qanday rasmiylashtirish?'],
     ru: ['💳 Виды карт?', '🌍 Использование за рубежом?', '✅ Как оформить?'],
-    en: ['💳 Card types?', '🌍 Use abroad?', '✅ How to apply?'],
   },
   callback: {
     uz: ['📞 Qachon qo\'ng\'iroq qilasiz?', '⏰ Qulay vaqt?'],
     ru: ['📞 Когда позвонят?', '⏰ Удобное время?'],
-    en: ['📞 When will you call?', '⏰ Best time for me?'],
   },
 };
 
 function inferSuggestedReplies(text: string, lang: string): string[] {
   const t = text.toLowerCase();
-  const l = lang === 'uz' ? 'uz' : lang === 'en' ? 'en' : 'ru';
+  const l = lang === 'uz' ? 'uz' : 'ru';
   if (/depozit|вклад|omonat|daromax|накоп|jamg'/i.test(t))
     return SUGGESTED_REPLIES['deposit']?.[l] ?? [];
   if (/kredit|кредит|ipoteka|ипотек|avtokredit|автокред/i.test(t))

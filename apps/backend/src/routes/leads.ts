@@ -33,9 +33,11 @@ export async function leadsRoute(app: FastifyInstance): Promise<void> {
     const body = req.body as {
       session_id?: string;
       lead_type?: string;
+      full_name?: string;
       phone?: string;
       preferred_time?: string;
       product_interest?: string;
+      interest_type?: string;
       message?: string;
       lang?: string;
     };
@@ -50,9 +52,11 @@ export async function leadsRoute(app: FastifyInstance): Promise<void> {
       sessionId: body.session_id,
       leadType,
       lang: body.lang ?? (tenant.config.languages.default as string) ?? 'ru',
+      fullName: body.full_name,
       phone: body.phone,
       preferredTime: body.preferred_time,
       productInterest: body.product_interest,
+      interestType: body.interest_type,
       message: body.message,
     });
 

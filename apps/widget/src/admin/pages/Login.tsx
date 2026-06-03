@@ -31,7 +31,7 @@ export function LoginPage() {
     if (ok) {
       navigate('/admin', { replace: true });
     } else {
-      setError('Invalid credentials. Check your username and password.');
+      setError('Неверные данные. Проверьте логин и пароль.');
     }
   }
 
@@ -55,19 +55,19 @@ export function LoginPage() {
                 fill="white" fillOpacity="0.95"/>
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-white">Banking Intelligence</h1>
-          <p className="text-[12px] text-white/40 mt-1">Admin Platform · Ipoteka Bank</p>
+          <h1 className="text-xl font-bold text-white">Ipoteka Bank</h1>
+          <p className="text-[12px] text-white/40 mt-1">Панель управления · Аналитика продаж</p>
         </div>
 
         {/* Card */}
         <div className="bg-[#161b27] rounded-2xl border border-white/[0.08] p-6 shadow-2xl">
-          <h2 className="text-[15px] font-semibold text-white mb-1">Sign in to continue</h2>
-          <p className="text-[12px] text-white/40 mb-5">Enter your admin credentials</p>
+          <h2 className="text-[15px] font-semibold text-white mb-1">Вход в систему</h2>
+          <p className="text-[12px] text-white/40 mb-5">Введите данные администратора</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-[11px] font-medium text-white/50 mb-1.5 uppercase tracking-wide">
-                Username
+                Логин
               </label>
               <input
                 type="text"
@@ -84,7 +84,7 @@ export function LoginPage() {
 
             <div>
               <label className="block text-[11px] font-medium text-white/50 mb-1.5 uppercase tracking-wide">
-                Password
+                Пароль
               </label>
               <input
                 type="password"
@@ -118,15 +118,15 @@ export function LoginPage() {
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3"/>
                     <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
                   </svg>
-                  Signing in…
+                  Входим…
                 </span>
-              ) : 'Sign in'}
+              ) : 'Войти'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-[11px] text-white/20 mt-4">
-          Banking Intelligence Platform · v2.0
+          Платформа аналитики продаж · v2.0
         </p>
       </div>
     </div>

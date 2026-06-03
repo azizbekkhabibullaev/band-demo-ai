@@ -1,7 +1,6 @@
 const ONLINE: Record<string, string> = {
   uz: 'Onlayn',
   ru: 'Онлайн',
-  en: 'Online',
 };
 
 interface Props {

@@ -3,15 +3,11 @@ import { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth.ts';
 
 const NAV = [
-  { to: '/admin',               label: 'Dashboard',     icon: '🏠', exact: true },
-  { to: '/admin/conversations',  label: 'Conversations', icon: '💬' },
-  { to: '/admin/trends',        label: 'Trends',        icon: '📈' },
-  { to: '/admin/complaints',    label: 'Complaints',    icon: '⚠️' },
-  { to: '/admin/intents',       label: 'Intents',       icon: '🎯' },
-  { to: '/admin/leads',         label: 'Leads',         icon: '📞' },
-  { to: '/admin/escalations',   label: 'Escalations',   icon: '🚨' },
-  { to: '/admin/insights',      label: 'AI Insights',   icon: '🧠' },
-  { to: '/admin/settings',      label: 'Settings',      icon: '⚙️' },
+  { to: '/admin',              label: 'Панель управления', icon: '📊', exact: true },
+  { to: '/admin/conversations', label: 'Диалоги',          icon: '💬' },
+  { to: '/admin/leads',        label: 'Лиды',              icon: '👥' },
+  { to: '/admin/complaints',   label: 'Жалобы',            icon: '⚠️' },
+  { to: '/admin/settings',     label: 'Настройки',         icon: '⚙️' },
 ];
 
 interface Props {
@@ -46,7 +42,7 @@ export function AdminLayout({ children, title }: Props) {
             </div>
             <div>
               <div className="text-[12px] font-semibold text-white leading-tight">Ipoteka Bank</div>
-              <div className="text-[9px] text-white/40 font-medium tracking-wide uppercase">Intelligence</div>
+              <div className="text-[9px] text-white/40 font-medium tracking-wide uppercase">Аналитика продаж</div>
             </div>
           </div>
         </div>
@@ -77,7 +73,7 @@ export function AdminLayout({ children, title }: Props) {
             onClick={handleLogout}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-white/40 hover:text-white/70 hover:bg-white/[0.04] transition-all duration-150"
           >
-            <span>🚪</span> Sign out
+            <span>🚪</span> Выйти
           </button>
         </div>
       </aside>
@@ -86,12 +82,12 @@ export function AdminLayout({ children, title }: Props) {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
         <header className="shrink-0 h-12 flex items-center px-6 border-b border-white/[0.06] bg-[#111318]">
-          <h1 className="text-[13px] font-semibold text-white/70">{title ?? 'Admin'}</h1>
+          <h1 className="text-[13px] font-semibold text-white/70">{title ?? 'Панель управления'}</h1>
           <div className="ml-auto flex items-center gap-3">
             <span className="text-[10px] text-white/30 font-mono">
-              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              {new Date().toLocaleDateString('ru-RU', { weekday: 'short', month: 'short', day: 'numeric' })}
             </span>
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Live" />
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Онлайн" />
           </div>
         </header>
 

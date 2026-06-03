@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { WidgetConfigResponse } from '../types.ts';
-import { createSession } from '../api/client.ts';
+import { createSession, submitLead } from '../api/client.ts';
 import { useChat } from '../hooks/useChat.ts';
 import { WidgetButton } from './WidgetButton.tsx';
 import { Header } from './Header.tsx';
@@ -15,8 +15,160 @@ interface Props {
 const TRUST_FOOTER: Record<string, string> = {
   uz: "🔒 Javoblar ma'lumot uchun. Rasmiy qarorlar uchun mutaxassisga murojaat qiling.",
   ru: '🔒 Ответы носят информационный характер. За официальными решениями обратитесь к специалисту.',
-  en: '🔒 Responses are informational. Consult a specialist for binding decisions.',
 };
+
+// ─── Banking interest detection ───────────────────────────────────────────────
+const INTEREST_PATTERNS: Array<{ re: RegExp; label: string }> = [
+  { re: /ипотека|ipoteka/i,                        label: 'Ипотека' },
+  { re: /автокред|avtokredit/i,                    label: 'Автокредит' },
+  { re: /кредит|kredit/i,                          label: 'Кредит' },
+  { re: /вклад|депозит|depozit|omonat/i,           label: 'Депозит/Вклад' },
+  { re: /карт|karta/i,                             label: 'Карта' },
+  { re: /инвестиц|investits|brokersk|брокер/i,     label: 'Инвестиции' },
+  { re: /перевод|o.tkazm/i,                        label: 'Перевод' },
+  { re: /рассрочка|bo.lib to.l/i,                  label: 'Рассрочка' },
+];
+
+function detectInterest(userText: string): string | null {
+  for (const { re, label } of INTEREST_PATTERNS) {
+    if (re.test(userText)) return label;
+  }
+  return null;
+}
+
+// ─── Phone validation (UZ: +998XXXXXXXXX) ────────────────────────────────────
+const UZ_PHONE_RE = /^\+998[0-9]{9}$/;
+
+function formatPhone(raw: string): string {
+  // Strip everything except digits and leading +
+  let val = raw.replace(/[^\d+]/g, '');
+  if (val.startsWith('998') && !val.startsWith('+')) val = '+' + val;
+  if (!val.startsWith('+')) val = '+998' + val.replace(/^0+/, '');
+  return val;
+}
+
+// ─── Lead capture card ────────────────────────────────────────────────────────
+interface LeadCardProps {
+  lang: string;
+  interestType: string;
+  sessionId: string | null;
+  onDismiss: () => void;
+  onSubmitted: () => void;
+}
+
+function LeadCaptureCard({ lang, interestType, sessionId, onDismiss, onSubmitted }: LeadCardProps) {
+  const [name, setName]         = useState('');
+  const [phone, setPhone]       = useState('');
+  const [phoneErr, setPhoneErr] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone]         = useState(false);
+
+  const isUz = lang === 'uz';
+
+  const labels = {
+    headline: isUz
+      ? 'Mutaxassis siz bilan bog\'lansinmi?'
+      : 'Хотите, чтобы специалист связался с Вами?',
+    sub: isUz
+      ? `Mahsulot: ${interestType}`
+      : `Продукт: ${interestType}`,
+    namePlaceholder: isUz ? 'Ismingiz (ixtiyoriy)' : 'Ваше имя (необязательно)',
+    phonePlaceholder: '+998 XX XXX XX XX',
+    phoneLabel: isUz ? 'Telefon raqam *' : 'Номер телефона *',
+    phoneError: isUz ? 'Raqam noto\'g\'ri. Misol: +998901234567' : 'Неверный формат. Пример: +998901234567',
+    submit: isUz ? 'Murojaat yuborish' : 'Оставить заявку',
+    dismiss: isUz ? 'Keyinroq' : 'Позже',
+    successTitle: isUz ? '✅ Muvaffaqiyatli!' : '✅ Заявка принята!',
+    successText: isUz
+      ? 'Mutaxassisimiz tez orada siz bilan bog\'lanadi.'
+      : 'Наш специалист свяжется с вами в ближайшее время.',
+  };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const formatted = formatPhone(phone);
+    if (!UZ_PHONE_RE.test(formatted)) {
+      setPhoneErr(labels.phoneError);
+      return;
+    }
+    setPhoneErr('');
+    setSubmitting(true);
+    try {
+      await submitLead({
+        phone: formatted,
+        fullName: name.trim() || undefined,
+        interestType,
+        sessionId: sessionId ?? undefined,
+        lang,
+      });
+      setDone(true);
+      setTimeout(() => onSubmitted(), 2500);
+    } catch {
+      // silently ignore — lead capture is best-effort
+      setDone(true);
+      setTimeout(() => onSubmitted(), 2500);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="mx-3 mb-2 px-4 py-3.5 rounded-2xl border border-emerald-200 bg-emerald-50 text-center animate-in fade-in duration-300">
+        <p className="text-[13px] font-semibold text-emerald-700">{labels.successTitle}</p>
+        <p className="text-[11.5px] text-emerald-600 mt-0.5">{labels.successText}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-3 mb-2 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="px-4 pt-3.5 pb-1">
+        <p className="text-[13px] font-semibold text-slate-800 leading-snug">{labels.headline}</p>
+        <p className="text-[11px] text-slate-500 mt-0.5">{labels.sub}</p>
+      </div>
+      <form onSubmit={handleSubmit} className="px-4 pb-3.5 pt-2 space-y-2">
+        <input
+          type="text"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder={labels.namePlaceholder}
+          className="w-full px-3 py-2 rounded-xl text-[12.5px] border border-slate-200
+            bg-white text-slate-800 placeholder-slate-400 outline-none
+            focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+        />
+        <div>
+          <input
+            type="tel"
+            value={phone}
+            onChange={e => { setPhone(e.target.value); setPhoneErr(''); }}
+            placeholder={labels.phonePlaceholder}
+            className={[
+              'w-full px-3 py-2 rounded-xl text-[12.5px] border bg-white text-slate-800',
+              'placeholder-slate-400 outline-none transition-all',
+              phoneErr ? 'border-red-400 focus:ring-2 focus:ring-red-100' : 'border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100',
+            ].join(' ')}
+            required
+          />
+          {phoneErr && <p className="text-[10.5px] text-red-500 mt-1 ml-1">{phoneErr}</p>}
+        </div>
+        <div className="flex gap-2 pt-1">
+          <button type="submit" disabled={submitting}
+            className="flex-1 py-2 rounded-xl text-white text-[12px] font-semibold
+              disabled:opacity-50 transition-all active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg,#1d4ed8,#3b82f6)' }}>
+            {submitting ? '…' : labels.submit}
+          </button>
+          <button type="button" onClick={onDismiss}
+            className="px-4 py-2 rounded-xl text-[12px] text-slate-500 border border-slate-200
+              hover:bg-slate-50 transition-colors">
+            {labels.dismiss}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
 
 // ─── Demo sequence (CEO Demo Mode) ────────────────────────────────────────────
 const DEMO_SEQUENCE: Record<string, Array<{ delay: number; text: string }>> = {
@@ -64,6 +216,9 @@ export function ChatWidget({ config }: Props) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState(false);
   const [lang, setLang] = useState<string>(config.languages.default ?? 'ru');
+  const [leadInterest, setLeadInterest] = useState<string | null>(null);
+  const [leadDismissed, setLeadDismissed] = useState(false);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
   const greetingAdded = useRef(false);
   const demoRan       = useRef(false);
 
@@ -111,6 +266,18 @@ export function ChatWidget({ config }: Props) {
     }
   }, [typewriterDone, sessionId, greetingText, addGreeting, messages.length]);
 
+  // ── Detect banking interest to trigger lead capture ───────────────────────────
+  useEffect(() => {
+    if (leadInterest || leadDismissed || leadSubmitted) return;
+    const userText = messages
+      .filter(m => m.role === 'user')
+      .map(m => m.content)
+      .join(' ');
+    if (!userText) return;
+    const interest = detectInterest(userText);
+    if (interest) setLeadInterest(interest);
+  }, [messages, leadInterest, leadDismissed, leadSubmitted]);
+
   // ── Language change: reset greeting if conversation hasn't started ────────────
   function handleLangChange(newLang: string) {
     const hasUserMessages = messages.some(m => m.role === 'user');
@@ -155,15 +322,19 @@ export function ChatWidget({ config }: Props) {
         <span className="text-2xl">⚠️</span>
       </div>
       <div>
-        <p className="text-sm font-medium text-slate-700 mb-1">Connection failed</p>
-        <p className="text-xs text-slate-400">Could not start a chat session.</p>
+        <p className="text-sm font-medium text-slate-700 mb-1">
+          {lang === 'uz' ? 'Ulanish xatosi' : 'Ошибка подключения'}
+        </p>
+        <p className="text-xs text-slate-400">
+          {lang === 'uz' ? 'Chat sessiyasini boshlashda xato.' : 'Не удалось начать чат-сессию.'}
+        </p>
       </div>
       <button
         onClick={() => { setSessionError(false); setSessionId(null); greetingAdded.current = false; }}
         className="px-5 py-2 rounded-full text-white text-sm font-semibold active:scale-95 transition-transform"
         style={{ background: 'linear-gradient(135deg,#2563eb,#3b82f6)' }}
       >
-        {lang === 'uz' ? 'Qayta urinish' : lang === 'ru' ? 'Попробовать снова' : 'Try again'}
+        {lang === 'uz' ? 'Qayta urinish' : 'Попробовать снова'}
       </button>
     </div>
   );
@@ -225,6 +396,17 @@ export function ChatWidget({ config }: Props) {
                     isStreaming={isStreaming}
                     lang={lang}
                     onQuickReply={handleSend}
+                  />
+                )}
+
+                {/* Lead capture card — shown after banking interest detected */}
+                {sessionId && leadInterest && !leadDismissed && !leadSubmitted && !isStreaming && (
+                  <LeadCaptureCard
+                    lang={lang}
+                    interestType={leadInterest}
+                    sessionId={sessionId}
+                    onDismiss={() => setLeadDismissed(true)}
+                    onSubmitted={() => setLeadSubmitted(true)}
                   />
                 )}
 
