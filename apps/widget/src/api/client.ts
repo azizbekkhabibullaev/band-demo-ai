@@ -30,11 +30,15 @@ export async function streamChat(
     onDone: (event: Extract<ChatSseEvent, { type: 'done' }>) => void;
     onError: (event: Extract<ChatSseEvent, { type: 'error' }>) => void;
   },
+  lang?: string,
 ): Promise<void> {
+  const body: Record<string, unknown> = { tenant_id: TENANT_ID, session_id: sessionId, message };
+  if (lang) body.language = lang;
+
   const res = await fetch(`${BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tenant_id: TENANT_ID, session_id: sessionId, message }),
+    body: JSON.stringify(body),
   });
   if (!res.ok || !res.body) {
     callbacks.onError({ type: 'error', error: `HTTP ${res.status}`, fallback: 'Something went wrong. Please try again.' });

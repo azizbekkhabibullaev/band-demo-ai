@@ -2,8 +2,14 @@
   "name": "bank-chatbot",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["apps/*", "packages/*", "tools/*"],
-  "engines": { "node": ">=20" },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "npm run -w apps/backend dev",
     "dev:widget": "npm run -w apps/widget dev",
@@ -14,5 +20,9 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "embed:kb": "tsx scripts/embed-kb.ts",
     "ingest:ipoteka": "tsx scripts/ingest-ipoteka.ts"
+  },
+  "dependencies": {
+    "@bank-chatbot/widget": "file:apps/widget",
+    "tailwindcss-animate": "^1.0.7"
   }
 }
