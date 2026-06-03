@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>07 · Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .dash-layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 36px; flex: 1; }
+    .ss-main { border-radius: 14px; overflow: hidden; border: 1px solid var(--border-mid); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .ss-main img { width: 100%; display: block; }
+    .browser-bar { background: #111c33; padding: 8px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .bdots { display: flex; gap: 5px; }
+    .bdot { width: 9px; height: 9px; border-radius: 50%; }
+    .burl { flex: 1; background: rgba(255,255,255,0.04); border-radius: 5px; padding: 3px 10px; font-size: 10px; color: #5a6b8a; font-family: monospace; }
+    .feature-list { display: flex; flex-direction: column; gap: 12px; }
+    .feat-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md); padding: 14px 18px;
+      display: flex; gap: 12px; align-items: center;
+    }
+    .feat-icon { font-size: 22px; flex-shrink: 0; }
+    .feat-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+    .feat-desc  { font-size: 11.5px; color: var(--text-secondary); line-height: 1.4; }
+    .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .mini-kpi { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px 16px; }
+    .mk-value { font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; }
+    .mk-label { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Аналитика · Панель управления</div>
+    <h1 class="slide-title">Дашборд — <span class="accent">всё на одном экране</span></h1>
+    <p class="slide-subtitle">Администратор видит KPI, воронку лидов, активность и топ продуктов в реальном времени</p>
+
+    <div class="dash-layout">
+      <!-- Right: screenshot (bigger) -->
+      <div style="order:2;">
+        <div class="ss-main">
+          <div class="browser-bar">
+            <div class="bdots"><span class="bdot" style="background:#ff5f57"></span><span class="bdot" style="background:#ffbd2e"></span><span class="bdot" style="background:#28c840"></span></div>
+            <div class="burl">localhost:5173/admin</div>
+          </div>
+          <img src="../assets/screenshots/admin/11_dashboard_full.png" alt="Dashboard">
+        </div>
+      </div>
+
+      <!-- Left: features -->
+      <div style="order:1;">
+        <div class="kpi-row">
+          <div class="mini-kpi">
+            <div class="mk-value">313</div>
+            <div class="mk-label">Всего сессий (демо-данные)</div>
+          </div>
+          <div class="mini-kpi">
+            <div class="mk-value">8</div>
+            <div class="mk-label">Лидов захвачено</div>
+          </div>
+          <div class="mini-kpi">
+            <div class="mk-value">70</div>
+            <div class="mk-label">Сигналов жалоб</div>
+          </div>
+          <div class="mini-kpi">
+            <div class="mk-value">258</div>
+            <div class="mk-label">Кликов Quick Actions</div>
+          </div>
+        </div>
+        <div class="feature-list">
+          <div class="feat-card">
+            <div class="feat-icon">📈</div>
+            <div>
+              <div class="feat-title">График активности (14 дней)</div>
+              <div class="feat-desc">Линейный тренд диалогов с разбивкой по языкам RU/UZ — видна динамика роста</div>
+            </div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🏆</div>
+            <div>
+              <div class="feat-title">Топ продуктов по спросу</div>
+              <div class="feat-desc">Горизонтальные бары: депозиты, ипотека, кредиты — какой продукт интересует клиентов сейчас</div>
+            </div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🎯</div>
+            <div>
+              <div class="feat-title">Воронка лидов в реальном времени</div>
+              <div class="feat-desc">5-этапная воронка с конверсией на каждом шаге — моментальный срез продаж</div>
+            </div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">⚠️</div>
+            <div>
+              <div class="feat-title">Сигналы жалоб</div>
+              <div class="feat-desc">Топ категорий проблем клиентов прямо на главной странице — превентивный мониторинг</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

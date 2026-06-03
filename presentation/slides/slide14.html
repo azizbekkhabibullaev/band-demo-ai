@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>14 · Следующие шаги</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .next-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; flex: 1; }
+    .phase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .phase-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0; width: 3px;
+    }
+    .phase-now::before  { background: #34d399; }
+    .phase-soon::before { background: #60a5fa; }
+    .phase-later::before { background: #a78bfa; }
+    .phase-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .phase-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .phase-badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .badge-now  { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+    .badge-soon { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.25); }
+    .badge-later{ background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+    .phase-items { display: flex; flex-direction: column; gap: 6px; }
+    .pi { font-size: 12.5px; color: var(--text-secondary); display: flex; gap: 8px; align-items: flex-start; line-height: 1.4; }
+    .pi::before { content: '→'; color: var(--text-muted); flex-shrink: 0; }
+    .pi strong { color: var(--text-primary); font-weight: 600; }
+    .decision-box {
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.18);
+      border-radius: var(--radius-lg);
+      padding: 24px 26px;
+    }
+    .decision-item { padding: 14px 0; border-bottom: 1px solid var(--border-subtle); }
+    .decision-item:last-child { border: none; }
+    .di-q { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .di-a { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .di-a strong { color: var(--text-accent); }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Статус · Дальнейший путь</div>
+    <h1 class="slide-title">Следующие <span class="accent">шаги</span></h1>
+    <p class="slide-subtitle">От текущего MVP до полноценной продакшн-системы банка</p>
+
+    <div class="next-layout">
+      <!-- Left: phases -->
+      <div>
+        <div class="phase-card phase-now">
+          <div class="phase-header">
+            <div class="phase-title">Фаза 0 — Уже готово сейчас</div>
+            <span class="phase-badge badge-now">✅ Готово</span>
+          </div>
+          <div class="phase-items">
+            <div class="pi"><strong>Демонстрация MVP</strong> — виджет + admin на localhost:5173</div>
+            <div class="pi"><strong>313 демо-сессий</strong>, 8 лидов, 70 жалоб в БД для скриншотов</div>
+            <div class="pi"><strong>Двуязычный чат</strong> RU/UZ с GPT-4o mini уже отвечает</div>
+            <div class="pi"><strong>JWT Admin-панель</strong> с полным CRUD лидов и диалогов</div>
+          </div>
+        </div>
+
+        <div class="phase-card phase-soon">
+          <div class="phase-header">
+            <div class="phase-title">Фаза 1 — Наполнение базы знаний (2–4 нед)</div>
+            <span class="phase-badge badge-soon">Sprint 1</span>
+          </div>
+          <div class="phase-items">
+            <div class="pi"><strong>Загрузка реальных FAQ</strong> — тарифы, условия, контакты банка</div>
+            <div class="pi"><strong>Загрузка KB-статей</strong> — продуктовые описания, инструкции</div>
+            <div class="pi"><strong>Настройка embedding</strong> — генерация векторов в pgvector</div>
+            <div class="pi"><strong>Тестирование качества</strong> ответов на реальных вопросах клиентов</div>
+          </div>
+        </div>
+
+        <div class="phase-card phase-later">
+          <div class="phase-header">
+            <div class="phase-title">Фаза 2 — Интеграция (1–2 мес)</div>
+            <span class="phase-badge badge-later">Sprint 2–3</span>
+          </div>
+          <div class="phase-items">
+            <div class="pi"><strong>Размещение на боевом домене</strong> ipotekabank.uz</div>
+            <div class="pi"><strong>CRM-интеграция</strong> — передача лидов в систему банка</div>
+            <div class="pi"><strong>Оркестровая CRM</strong> — статус лидов обновляется из системы банка</div>
+            <div class="pi"><strong>Аутентификация операторов</strong> — роли, журналирование действий</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: decision tree -->
+      <div>
+        <div class="decision-box">
+          <div class="section-label" style="margin-bottom:16px;">Ключевые решения для совета</div>
+          <div class="decision-item">
+            <div class="di-q">1. Наполнение базы знаний</div>
+            <div class="di-a">Нужен контент-менеджер для структурирования FAQ и KB. <strong>Срок: 2–4 недели.</strong></div>
+          </div>
+          <div class="decision-item">
+            <div class="di-q">2. Развёртывание в продакшн</div>
+            <div class="di-a">Нужен DevOps-специалист для настройки VPS/Cloud + HTTPS. <strong>Срок: 1 неделя.</strong></div>
+          </div>
+          <div class="decision-item">
+            <div class="di-q">3. Интеграция с CRM банка</div>
+            <div class="di-a">Необходимо API от ИТ-команды банка. Платформа готова принять вебхук. <strong>Срок: 2–3 недели.</strong></div>
+          </div>
+          <div class="decision-item">
+            <div class="di-q">4. OpenAI vs локальная LLM</div>
+            <div class="di-a">Архитектура позволяет замену GPT-4o mini на локальную модель (LLM) без переработки кода.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding:16px 20px;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);border-radius:12px;">
+          <div style="font-size:12px;font-weight:700;color:#34d399;margin-bottom:6px;">🚀 До боевого запуска</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
+            При наличии контента базы знаний и решения по CRM — полный запуск <strong style="color:var(--text-primary);">за 4–6 недель.</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

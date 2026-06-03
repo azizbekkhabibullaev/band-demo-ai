@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>15 · Вопросы</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .outro-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; flex: 1; align-items: center; }
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+    }
+    .faq-q { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .faq-a { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .faq-a strong { color: var(--text-accent); }
+    .contact-card {
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.18);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-top: 24px;
+    }
+    .demo-cta {
+      background: linear-gradient(135deg, rgba(29,78,216,0.2), rgba(79,70,229,0.2));
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    .cta-title { font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; letter-spacing: -0.02em; }
+    .cta-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .url-chip { display: inline-block; font-family: monospace; font-size: 13px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-mid); border-radius: 6px; padding: 4px 10px; color: var(--text-accent); margin-top: 10px; }
+    .summary-item { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .si-icon { font-size: 18px; }
+    .si-text { font-size: 13px; color: var(--text-secondary); }
+    .si-text strong { color: var(--text-primary); }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Outro · Вопросы</div>
+
+    <div class="outro-layout">
+      <!-- Left: CTA + summary -->
+      <div>
+        <div class="demo-cta">
+          <div class="cta-title">Посмотрите живой продукт прямо сейчас</div>
+          <div class="cta-desc">Виджет и Admin-панель запущены локально и доступны для демонстрации. Откройте браузер — продукт работает.</div>
+          <div>
+            <div class="url-chip">localhost:5173</div>
+            <span style="color:var(--text-muted);font-size:12px;margin:0 8px;">·</span>
+            <div class="url-chip">localhost:5173/?demo=1</div>
+          </div>
+          <div style="margin-top:8px;">
+            <div class="url-chip">localhost:5173/admin</div>
+            <span style="color:var(--text-muted);font-size:11px;margin-left:8px;">admin / IpotekaAdmin2026</span>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-bottom:12px;">Резюме</div>
+        <div class="summary-item"><div class="si-icon">✅</div><div class="si-text"><strong>Продукт готов</strong> — все функции работают в production-режиме</div></div>
+        <div class="summary-item"><div class="si-icon">🚀</div><div class="si-text"><strong>До запуска осталось</strong> — наполнить базу знаний (2–4 нед)</div></div>
+        <div class="summary-item"><div class="si-icon">💰</div><div class="si-text"><strong>ROI &lt; 3 месяца</strong> при 1 000+ обращений в день</div></div>
+        <div class="summary-item"><div class="si-icon">🔒</div><div class="si-text"><strong>Безопасность</strong> — Domain guard, Post-filter, Rate limiter, JWT</div></div>
+        <div class="summary-item"><div class="si-icon">🌐</div><div class="si-text"><strong>Двуязычность</strong> — русский + узбекский из коробки</div></div>
+      </div>
+
+      <!-- Right: FAQ -->
+      <div>
+        <h1 class="slide-title" style="font-size:40px;margin-bottom:20px;">Вопросы & <span class="accent">ответы</span></h1>
+
+        <div class="faq-item">
+          <div class="faq-q">Насколько безопасно использование GPT-4o mini?</div>
+          <div class="faq-a">Данные клиента не хранятся в OpenAI. Сессии анонимны (IP-хеш). <strong>Domain Guard блокирует</strong> нерелевантные запросы до обращения к GPT.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Можно ли заменить OpenAI на локальную модель?</div>
+          <div class="faq-a">Да. Архитектура изолирована: <strong>один файл openai.ts</strong> — замените URL и модель на любой OpenAI-совместимый endpoint (Ollama, vLLM).</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Как быстро AI начнёт отвечать правильно на вопросы банка?</div>
+          <div class="faq-a">После загрузки FAQ и KB-статей — <strong>немедленно</strong>. RAG-система автоматически использует документы банка как источник ответов.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Что происходит, если AI не знает ответа?</div>
+          <div class="faq-a">Система эскалирует запрос: <strong>клиент получает номер горячей линии</strong> 1200 и предложение связаться с оператором. Нет «галлюцинаций» по банковским данным.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Возможна ли поддержка нескольких банков?</div>
+          <div class="faq-a">Да. Архитектура <strong>multi-tenant</strong> — каждый банк имеет изолированные данные, настройки и KB.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

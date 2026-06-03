@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>11 · Бизнес-ценность</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .value-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .value-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .value-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+    .vc-ops::before   { background: linear-gradient(90deg,#2563eb,#3b82f6); }
+    .vc-sales::before { background: linear-gradient(90deg,#059669,#34d399); }
+    .vc-mgmt::before  { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
+    .vc-icon  { font-size: 28px; margin-bottom: 10px; }
+    .vc-title { font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.02em; }
+    .vc-list  { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .vc-item  { font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
+    .vc-item::before { content: '→'; color: var(--text-muted); flex-shrink: 0; }
+    .vc-item strong { color: var(--text-primary); font-weight: 600; }
+    .vs-row { display: flex; gap: 0; }
+    .vs-card {
+      flex: 1; padding: 18px 22px;
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+    }
+    .vs-card:first-child { border-radius: 12px 0 0 12px; border-right: none; }
+    .vs-card:last-child  { border-radius: 0 12px 12px 0; }
+    .vs-side { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+    .vs-before { color: #f87171; }
+    .vs-after  { color: #34d399; }
+    .vs-item { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.4; }
+    .vs-item strong { color: var(--text-primary); }
+    .separator { width: 1px; background: var(--border-subtle); margin: 0; }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">ROI · Бизнес-ценность</div>
+    <h1 class="slide-title">Для кого <span class="accent">и чем выгодно</span></h1>
+    <p class="slide-subtitle">Три группы стейкхолдеров получают измеримый результат уже с первого дня</p>
+
+    <div class="value-grid">
+      <!-- Operations -->
+      <div class="value-card vc-ops">
+        <div class="vc-icon">🏦</div>
+        <div class="vc-title">Колл-центр / Операторы</div>
+        <ul class="vc-list">
+          <li class="vc-item"><strong>-80% рутинных звонков</strong> — AI отвечает на типовые вопросы</li>
+          <li class="vc-item"><strong>Контекст перед звонком</strong> — оператор знает историю клиента</li>
+          <li class="vc-item"><strong>24/7 без доп. смен</strong> — ночной трафик на AI</li>
+          <li class="vc-item"><strong>Раннее обнаружение</strong> системных сбоев через жалобы</li>
+        </ul>
+      </div>
+
+      <!-- Sales -->
+      <div class="value-card vc-sales">
+        <div class="vc-icon">💰</div>
+        <div class="vc-title">Продажи / Лидогенерация</div>
+        <ul class="vc-list">
+          <li class="vc-item"><strong>Захват лидов 24/7</strong> — клиент оставляет заявку в любое время</li>
+          <li class="vc-item"><strong>Горячие лиды приоритизированы</strong> — скор HOT/WARM/COLD</li>
+          <li class="vc-item"><strong>8 продуктовых паттернов</strong> — ипотека, кредит, вклад и др.</li>
+          <li class="vc-item"><strong>Полный контекст намерения</strong> в карточке лида</li>
+        </ul>
+      </div>
+
+      <!-- Management -->
+      <div class="value-card vc-mgmt">
+        <div class="vc-icon">📊</div>
+        <div class="vc-title">Менеджмент / Аналитика</div>
+        <ul class="vc-list">
+          <li class="vc-item"><strong>Real-time KPI</strong> — диалоги, лиды, жалобы, AI containment</li>
+          <li class="vc-item"><strong>Топ продуктов</strong> — видит спрос до маркетинговых отчётов</li>
+          <li class="vc-item"><strong>Тренды жалоб</strong> — сигнал о проблеме заранее</li>
+          <li class="vc-item"><strong>Клиентские намерения</strong> в разрезе языков и времени</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Before/After comparison -->
+    <div class="vs-row">
+      <div class="vs-card">
+        <div class="vs-side vs-before">⚠️ До платформы</div>
+        <div class="vs-item">Клиент ждёт <strong>8–12 минут</strong> ответа оператора</div>
+        <div class="vs-item">Лиды ночью и на выходных — <strong>потеряны</strong></div>
+        <div class="vs-item">Сбой приложения обнаруживается через <strong>72 часа</strong></div>
+        <div class="vs-item">Нет данных: что интересует клиентов <strong>прямо сейчас</strong></div>
+      </div>
+      <div class="separator"></div>
+      <div class="vs-card">
+        <div class="vs-side vs-after">✅ С платформой</div>
+        <div class="vs-item">AI отвечает за <strong>&lt; 2 секунды</strong> в любое время</div>
+        <div class="vs-item">Лиды захватываются <strong>автоматически 24/7</strong></div>
+        <div class="vs-item">Всплеск жалоб виден через <strong>30 минут</strong></div>
+        <div class="vs-item">Дашборд показывает спрос в <strong>реальном времени</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

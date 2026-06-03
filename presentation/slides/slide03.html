@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>03 · Решение</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .solution-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .pillar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pillar::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+    }
+    .pillar.p1::before { background: linear-gradient(90deg,#1d4ed8,#3b82f6); }
+    .pillar.p2::before { background: linear-gradient(90deg,#4f46e5,#7c3aed); }
+    .pillar.p3::before { background: linear-gradient(90deg,#059669,#34d399); }
+    .pillar-num { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px; }
+    .pillar-icon { font-size: 32px; margin-bottom: 12px; }
+    .pillar-title { font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; letter-spacing: -0.02em; }
+    .pillar-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+    .pillar-features { display: flex; flex-direction: column; gap: 8px; }
+    .pf { font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+    .pf::before { content: '—'; color: var(--text-muted); flex-shrink: 0; }
+    .pf strong { color: var(--text-primary); font-weight: 600; }
+    .bottom-bar {
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.12);
+      border-radius: var(--radius-md);
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    .bb-item { text-align: center; }
+    .bb-value { font-size: 28px; font-weight: 800; color: #60a5fa; letter-spacing: -0.03em; }
+    .bb-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+    .bb-sep { width: 1px; height: 40px; background: var(--border-subtle); }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Контекст · Решение</div>
+    <h1 class="slide-title">Три кита <span class="grad">AI-платформы</span></h1>
+    <p class="slide-subtitle">Единая платформа закрывает все три разрыва: обслуживание, продажи и аналитика</p>
+
+    <div class="solution-grid">
+      <!-- Pillar 1: Chat AI -->
+      <div class="pillar p1">
+        <div class="pillar-num">01 · Клиентский сервис</div>
+        <div class="pillar-icon">💬</div>
+        <div class="pillar-title">AI-ассистент 24/7</div>
+        <div class="pillar-desc">Интеллектуальный чат-виджет, встроенный на сайт банка. Отвечает мгновенно на любой вопрос на русском и узбекском.</div>
+        <div class="pillar-features">
+          <div class="pf"><strong>RAG-поиск</strong> по базе знаний банка</div>
+          <div class="pf"><strong>4-уровневый роутинг</strong> запросов</div>
+          <div class="pf"><strong>Двуязычность</strong> RU + UZ</div>
+          <div class="pf"><strong>Эскалация</strong> на оператора при необходимости</div>
+        </div>
+      </div>
+
+      <!-- Pillar 2: Lead Generation -->
+      <div class="pillar p2">
+        <div class="pillar-num">02 · Лидогенерация</div>
+        <div class="pillar-icon">🎯</div>
+        <div class="pillar-title">Автозахват лидов</div>
+        <div class="pillar-desc">Когда клиент спрашивает об ипотеке, кредите или вкладе — система автоматически предлагает оставить контакт для обратного звонка.</div>
+        <div class="pillar-features">
+          <div class="pf"><strong>8 паттернов</strong> банковского интереса</div>
+          <div class="pf"><strong>Скоринг</strong> лидов 0–100</div>
+          <div class="pf"><strong>CRM-воронка</strong> 5 этапов</div>
+          <div class="pf"><strong>Валидация</strong> UZ-номеров (+998)</div>
+        </div>
+      </div>
+
+      <!-- Pillar 3: Analytics -->
+      <div class="pillar p3">
+        <div class="pillar-num">03 · Бизнес-аналитика</div>
+        <div class="pillar-icon">📊</div>
+        <div class="pillar-title">Панель управления</div>
+        <div class="pillar-desc">Администраторы видят все диалоги, лиды, жалобы и тренды в реальном времени. Полная прозрачность работы AI.</div>
+        <div class="pillar-features">
+          <div class="pf"><strong>KPI-дашборд</strong> в реальном времени</div>
+          <div class="pf"><strong>8 категорий</strong> жалоб с приоритетами</div>
+          <div class="pf"><strong>Топ продуктов</strong> по спросу</div>
+          <div class="pf"><strong>Просмотр диалогов</strong> с фильтрацией</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom summary bar -->
+    <div class="bottom-bar">
+      <div class="bb-item">
+        <div class="bb-value">1</div>
+        <div class="bb-label">Кодовая база (монорепо)</div>
+      </div>
+      <div class="bb-sep"></div>
+      <div class="bb-item">
+        <div class="bb-value">2</div>
+        <div class="bb-label">Языка интерфейса</div>
+      </div>
+      <div class="bb-sep"></div>
+      <div class="bb-item">
+        <div class="bb-value">5</div>
+        <div class="bb-label">Экранов Admin-панели</div>
+      </div>
+      <div class="bb-sep"></div>
+      <div class="bb-item">
+        <div class="bb-value">4</div>
+        <div class="bb-label">Уровня RAG-роутинга</div>
+      </div>
+      <div class="bb-sep"></div>
+      <div class="bb-item">
+        <div class="bb-value">8</div>
+        <div class="bb-label">Категорий жалоб</div>
+      </div>
+      <div class="bb-sep"></div>
+      <div class="bb-item">
+        <div class="bb-value">24/7</div>
+        <div class="bb-label">Без выходных</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

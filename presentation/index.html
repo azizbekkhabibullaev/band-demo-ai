@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ipoteka Bank — AI Customer Intelligence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      background: #060b18;
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+    #stage {
+      width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    /* Scale the 1440×900 slide to fit viewport while maintaining aspect ratio */
+    #slide-wrapper {
+      position: relative;
+      transform-origin: top center;
+    }
+    iframe#slide-frame {
+      width: 1440px;
+      height: 900px;
+      border: none;
+      display: block;
+    }
+    /* Bottom navigation */
+    #nav-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 52px;
+      background: rgba(6, 11, 24, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 1000;
+    }
+    .nav-brand { font-size: 11px; font-weight: 600; color: #5a6b8a; letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-center { display: flex; align-items: center; gap: 12px; }
+    .nav-btn {
+      width: 34px; height: 34px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(17,28,51,1);
+      color: #94a3c0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; transition: all 0.15s; user-select: none;
+    }
+    .nav-btn:hover { background: rgba(26,40,69,1); color: #f0f4ff; border-color: rgba(255,255,255,0.18); }
+    .nav-btn:active { transform: scale(0.94); }
+    .slide-counter { color: #5a6b8a; font-size: 12px; font-weight: 500; min-width: 64px; text-align: center; }
+    .overview-btn {
+      padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);
+      background: transparent; color: #94a3c0; cursor: pointer;
+      font-size: 12px; font-weight: 500; transition: all 0.15s;
+    }
+    .overview-btn:hover { background: rgba(17,28,51,1); color: #f0f4ff; }
+    .key-hint { font-size: 11px; color: #5a6b8a; }
+    .key-hint kbd { display: inline-block; padding: 1px 5px; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px; background: rgba(17,28,51,1); }
+    /* Progress bar */
+    #progress-bar {
+      position: fixed; bottom: 52px; left: 0; right: 0;
+      height: 2px; z-index: 999;
+      background: rgba(255,255,255,0.04);
+    }
+    #progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+      transition: width 0.3s ease;
+    }
+    /* Slide title tooltip */
+    #slide-title-bar {
+      position: fixed; bottom: 56px; left: 50%; transform: translateX(-50%);
+      z-index: 998; padding: 4px 14px; border-radius: 20px;
+      background: rgba(17,28,51,0.9); border: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px; color: #94a3c0; white-space: nowrap;
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    /* Overview modal */
+    #overview-modal {
+      display: none;
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(6, 11, 24, 0.97);
+      backdrop-filter: blur(20px);
+      padding: 48px; overflow-y: auto;
+    }
+    #overview-modal.open { display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="slide-wrapper">
+    <iframe id="slide-frame" src="slides/slide01.html"></iframe>
+  </div>
+</div>
+
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div id="slide-title-bar"></div>
+
+<!-- Bottom nav -->
+<div id="nav-bar">
+  <span class="nav-brand">Ipoteka Bank &nbsp;·&nbsp; AI Platform</span>
+  <div class="nav-center">
+    <button class="nav-btn" id="nav-prev" title="Назад (←)">&#8592;</button>
+    <span class="slide-counter" id="nav-counter">1 / 15</span>
+    <button class="nav-btn" id="nav-next" title="Вперёд (→)">&#8594;</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <button class="overview-btn" id="nav-overview">&#9635; Обзор</button>
+    <span class="key-hint"><kbd>←</kbd><kbd>→</kbd> навигация &nbsp; <kbd>O</kbd> обзор &nbsp; <kbd>F</kbd> полный экран</span>
+  </div>
+</div>
+
+<!-- Overview modal -->
+<div id="overview-modal">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#60a5fa;margin-bottom:6px;">ОБЗОР СЛАЙДОВ</div>
+      <div style="font-size:28px;font-weight:800;color:#f0f4ff;">Ipoteka Bank — AI Customer Intelligence Platform</div>
+    </div>
+    <button id="close-overview" style="width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#94a3c0;font-size:20px;cursor:pointer;">✕</button>
+  </div>
+  <div id="overview-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;"></div>
+</div>
+
+<script>
+const SLIDES = [
+  { file: 'slides/slide01.html', title: 'Обложка',             section: 'Intro' },
+  { file: 'slides/slide02.html', title: 'Проблема',            section: 'Контекст' },
+  { file: 'slides/slide03.html', title: 'Решение',             section: 'Контекст' },
+  { file: 'slides/slide04.html', title: 'Архитектура',         section: 'Продукт' },
+  { file: 'slides/slide05.html', title: 'Виджет чата',         section: 'Продукт' },
+  { file: 'slides/slide06.html', title: 'Лидогенерация',       section: 'Продукт' },
+  { file: 'slides/slide07.html', title: 'Дашборд',             section: 'Аналитика' },
+  { file: 'slides/slide08.html', title: 'Диалоги',             section: 'Аналитика' },
+  { file: 'slides/slide09.html', title: 'Жалобы',              section: 'Аналитика' },
+  { file: 'slides/slide10.html', title: 'Продуктовые инсайты', section: 'Аналитика' },
+  { file: 'slides/slide11.html', title: 'Бизнес-ценность',     section: 'ROI' },
+  { file: 'slides/slide12.html', title: 'Финансовый эффект',   section: 'ROI' },
+  { file: 'slides/slide13.html', title: 'Что уже работает',    section: 'Статус' },
+  { file: 'slides/slide14.html', title: 'Следующие шаги',      section: 'Статус' },
+  { file: 'slides/slide15.html', title: 'Вопросы & Контакты',  section: 'Outro' },
+];
+
+let current = 0;
+
+function scaleSlide() {
+  const wrapper = document.getElementById('slide-wrapper');
+  const vw = window.innerWidth;
+  const vh = window.innerHeight - 52; // subtract nav height
+  const scaleX = vw / 1440;
+  const scaleY = vh / 900;
+  const scale = Math.min(scaleX, scaleY);
+  wrapper.style.transform = `scale(${scale})`;
+  wrapper.style.width = '1440px';
+  wrapper.style.height = '900px';
+  // Center vertically
+  const scaledH = 900 * scale;
+  const topOffset = Math.max(0, (vh - scaledH) / 2);
+  wrapper.style.marginTop = topOffset + 'px';
+}
+window.addEventListener('resize', scaleSlide);
+scaleSlide();
+
+function goTo(index) {
+  if (index < 0 || index >= SLIDES.length) return;
+  current = index;
+  const frame = document.getElementById('slide-frame');
+  frame.src = SLIDES[current].file;
+  updateNav();
+}
+
+function updateNav() {
+  document.getElementById('nav-counter').textContent = `${current + 1} / ${SLIDES.length}`;
+  const pct = ((current + 1) / SLIDES.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  // Show title briefly
+  const titleBar = document.getElementById('slide-title-bar');
+  titleBar.textContent = `${String(current+1).padStart(2,'0')} · ${SLIDES[current].title}`;
+  titleBar.style.opacity = '1';
+  clearTimeout(titleBar._timer);
+  titleBar._timer = setTimeout(() => { titleBar.style.opacity = '0'; }, 2000);
+  // Update overview active state if open
+  refreshOverview();
+}
+
+function next() { if (current < SLIDES.length - 1) goTo(current + 1); }
+function prev() { if (current > 0) goTo(current - 1); }
+
+document.getElementById('nav-prev').addEventListener('click', prev);
+document.getElementById('nav-next').addEventListener('click', next);
+document.getElementById('nav-overview').addEventListener('click', openOverview);
+document.getElementById('close-overview').addEventListener('click', closeOverview);
+
+function openOverview() {
+  const modal = document.getElementById('overview-modal');
+  modal.classList.add('open');
+  buildOverviewGrid();
+}
+function closeOverview() {
+  document.getElementById('overview-modal').classList.remove('open');
+}
+
+function buildOverviewGrid() {
+  const grid = document.getElementById('overview-grid');
+  grid.innerHTML = '';
+  SLIDES.forEach((slide, i) => {
+    const card = document.createElement('div');
+    const isActive = i === current;
+    card.style.cssText = `
+      background: ${isActive ? 'rgba(37,99,235,0.15)' : 'rgba(17,28,51,0.9)'};
+      border: 1px solid ${isActive ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.06)'};
+      border-radius: 12px; padding: 18px; cursor: pointer;
+      transition: all 0.15s;
+    `;
+    card.innerHTML = `
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${isActive?'#60a5fa':'#5a6b8a'};margin-bottom:8px;">${String(i+1).padStart(2,'0')} · ${slide.section}</div>
+      <div style="font-size:14px;font-weight:600;color:${isActive?'#f0f4ff':'#94a3c0'};line-height:1.3;">${slide.title}</div>
+    `;
+    card.addEventListener('mouseenter', () => { if (!isActive) card.style.borderColor = 'rgba(255,255,255,0.12)'; });
+    card.addEventListener('mouseleave', () => { if (!isActive) card.style.borderColor = 'rgba(255,255,255,0.06)'; });
+    card.addEventListener('click', () => {
+      closeOverview();
+      goTo(i);
+    });
+    grid.appendChild(card);
+  });
+}
+
+function refreshOverview() {
+  if (!document.getElementById('overview-modal').classList.contains('open')) return;
+  buildOverviewGrid();
+}
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  const overviewOpen = document.getElementById('overview-modal').classList.contains('open');
+  if (overviewOpen) {
+    if (e.key === 'Escape') { closeOverview(); return; }
+    return;
+  }
+  switch(e.key) {
+    case 'ArrowRight': case ' ': case 'Enter': e.preventDefault(); next(); break;
+    case 'ArrowLeft':                          e.preventDefault(); prev(); break;
+    case 'o': case 'O':                        openOverview(); break;
+    case 'f': case 'F':
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen?.();
+      break;
+    case 'Escape':
+      if (document.fullscreenElement) document.exitFullscreen();
+      break;
+  }
+});
+
+// Touch swipe
+let swipeX = 0;
+document.addEventListener('touchstart', e => { swipeX = e.changedTouches[0].screenX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - swipeX;
+  if (Math.abs(dx) > 60) { if (dx < 0) next(); else prev(); }
+}, { passive: true });
+
+// Init
+updateNav();
+</script>
+</body>
+</html>

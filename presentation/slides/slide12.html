@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>12 · Финансовый эффект</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .roi-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; }
+    .roi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 22px 26px;
+    }
+    .roi-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border-subtle); }
+    .roi-item:last-child { border-bottom: none; }
+    .ri-label { font-size: 13px; color: var(--text-secondary); }
+    .ri-value { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+    .ri-value.green  { color: #34d399; }
+    .ri-value.blue   { color: #60a5fa; }
+    .ri-value.accent { color: #a78bfa; }
+    .big-metric {
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .bm-value { font-size: 52px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
+    .bm-label { font-size: 13px; color: var(--text-secondary); margin-top: 6px; }
+    .bm-sub   { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .note { font-size: 10.5px; color: var(--text-muted); line-height: 1.6; margin-top: 12px; padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border-subtle); }
+    .assumptions-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 22px;
+    }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">ROI · Финансовый эффект</div>
+    <h1 class="slide-title">Измеримый <span class="accent">экономический эффект</span></h1>
+    <p class="slide-subtitle">Консервативные оценки на основе отраслевых бенчмарков для банков СНГ</p>
+
+    <div class="roi-layout">
+      <!-- Left: savings -->
+      <div>
+        <div class="roi-card" style="margin-bottom:14px;">
+          <div class="section-label" style="margin-bottom:12px;">Экономия на операционных затратах</div>
+          <div class="roi-item">
+            <div class="ri-label">Снижение нагрузки колл-центра</div>
+            <div class="ri-value green">~70–80%</div>
+          </div>
+          <div class="roi-item">
+            <div class="ri-label">Стоимость 1 AI-ответа vs оператор</div>
+            <div class="ri-value green">~0.03$ vs 1.2–3$</div>
+          </div>
+          <div class="roi-item">
+            <div class="ri-label">Экономия при 1 000 обращений/день</div>
+            <div class="ri-value green">~$1 200/день</div>
+          </div>
+          <div class="roi-item">
+            <div class="ri-label">Покрытие ночного трафика</div>
+            <div class="ri-value blue">~20% диалогов</div>
+          </div>
+          <div class="roi-item">
+            <div class="ri-label">Выход на окупаемость</div>
+            <div class="ri-value accent">&lt; 3 месяца</div>
+          </div>
+        </div>
+
+        <div class="roi-card">
+          <div class="section-label" style="margin-bottom:12px;">Рост выручки от лидогенерации</div>
+          <div class="roi-item">
+            <div class="ri-label">Конверсия лид → сделка (сектор)</div>
+            <div class="ri-value green">15–25%</div>
+          </div>
+          <div class="roi-item">
+            <div class="ri-label">Средний чек ипотечного продукта</div>
+            <div class="ri-value blue">200–600 млн сум</div>
+          </div>
+          <div class="roi-item">
+            <div class="ri-label">Один захваченный лид (ипотека)</div>
+            <div class="ri-value accent">= комиссия банка</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: key metrics -->
+      <div>
+        <div class="big-metric">
+          <div class="bm-value gradient-text">~90%</div>
+          <div class="bm-label">Обращений обрабатывает AI без оператора</div>
+          <div class="bm-sub">AI Containment Rate — ключевой KPI эффективности</div>
+        </div>
+
+        <div class="big-metric">
+          <div class="bm-value gradient-text">&lt; 2с</div>
+          <div class="bm-label">Среднее время ответа на вопрос клиента</div>
+          <div class="bm-sub">vs 8–12 минут в колл-центре</div>
+        </div>
+
+        <div class="assumptions-box">
+          <div class="section-label" style="margin-bottom:10px;">Допущения расчётов</div>
+          <div class="note">
+            Расчёты основаны на: 1 000 обращений/день · Стоимость оператора $1.5/мин · Среднее время обращения 3 мин · Стоимость AI-токенов GPT-4o mini: $0.15/M input. Реальные цифры зависят от объёма трафика и тарифного плана OpenAI. Данная презентация не является финансовым прогнозом.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

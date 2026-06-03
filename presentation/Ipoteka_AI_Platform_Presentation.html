@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ipoteka Bank — AI Customer Intelligence Platform</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-deep:    #0b0f1a;
+    --bg-slide:   #111827;
+    --bg-card:    #1e293b;
+    --bg-card2:   #0f172a;
+    --border:     #1e3a5f;
+    --accent:     #3b82f6;
+    --accent2:    #60a5fa;
+    --accent-glow:#1d4ed8;
+    --gold:       #f59e0b;
+    --green:      #10b981;
+    --red:        #ef4444;
+    --yellow:     #f59e0b;
+    --text:       #e2e8f0;
+    --text-dim:   #94a3b8;
+    --text-muted: #64748b;
+    --hot:        #ef4444;
+    --warm:       #f59e0b;
+    --cold:       #60a5fa;
+    --slide-w:    1280px;
+    --slide-h:    720px;
+  }
+
+  html { background: var(--bg-deep); }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ===== SLIDE LAYOUT ===== */
+  .slide {
+    width: var(--slide-w);
+    min-height: var(--slide-h);
+    background: var(--bg-slide);
+    margin: 0 auto 40px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .slide-header {
+    background: linear-gradient(135deg, #0f1f3d 0%, #0d1b2e 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 22px 48px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .slide-header .slide-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  .slide-header .brand {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  .slide-body {
+    flex: 1;
+    padding: 36px 48px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .slide-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .slide-subtitle {
+    font-size: 15px;
+    color: var(--accent2);
+    margin-bottom: 28px;
+    font-weight: 500;
+  }
+
+  .slide-footer {
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid var(--border);
+    padding: 10px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .slide-footer span {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== TYPOGRAPHY ===== */
+  h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+  h2 { font-size: 18px; font-weight: 600; color: var(--accent2); margin-bottom: 10px; }
+  h3 { font-size: 14px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  p  { font-size: 14px; color: var(--text); margin-bottom: 8px; }
+
+  /* ===== ACCENT LINE ===== */
+  .accent-line {
+    width: 48px; height: 3px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    border-radius: 2px;
+    margin-bottom: 24px;
+  }
+
+  /* ===== TABLES ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    background: var(--bg-card2);
+    color: var(--accent2);
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(30,58,95,0.5);
+    color: var(--text);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(59,130,246,0.05); }
+
+  .prio-red   { color: #ef4444; font-weight: 700; }
+  .prio-yellow{ color: #f59e0b; font-weight: 700; }
+  .prio-green { color: #10b981; font-weight: 700; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+
+  .card-row {
+    display: flex;
+    gap: 16px;
+  }
+
+  .card-row .card {
+    flex: 1;
+  }
+
+  /* ===== KPI CARDS ===== */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .kpi-card .kpi-icon { font-size: 20px; margin-bottom: 4px; }
+  .kpi-card .kpi-val  { font-size: 26px; font-weight: 800; color: var(--accent); margin: 4px 0; }
+  .kpi-card .kpi-lbl  { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-card .kpi-sub  { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ===== FLOW DIAGRAM ===== */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    position: relative;
+  }
+
+  .flow-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 38px;
+    bottom: -12px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), transparent);
+  }
+
+  .flow-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent-glow), var(--accent));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .flow-content {
+    flex: 1;
+    padding-bottom: 20px;
+  }
+
+  .flow-content strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .flow-content span {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ===== BADGE ===== */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-blue  { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .badge-red   { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-gold  { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #1e3a5f;
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 11.5px;
+    color: #a8c7fa;
+    white-space: pre;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+
+  /* ===== QUOTE ===== */
+  .quote {
+    background: rgba(59,130,246,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 14px;
+    margin: 16px 0;
+  }
+
+  /* ===== BULLET LIST ===== */
+  .blist {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .blist li {
+    display: flex;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--text);
+  }
+  .blist li::before {
+    content: '▸';
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ===== CHECKLIST ===== */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .checklist li { display: flex; gap: 10px; font-size: 13px; color: var(--text); }
+  .check-done::before { content: '✅'; }
+  .check-todo::before { content: '☐'; color: var(--text-muted); }
+
+  /* ===== COMPARISON TABLE SPECIAL ===== */
+  .comp-highlight td { background: rgba(59,130,246,0.1) !important; font-weight: 600; }
+  .comp-highlight td:first-child { color: var(--accent2); }
+
+  /* ===== SCREENSHOT PLACEHOLDER ===== */
+  .screenshot-placeholder {
+    background: var(--bg-card2);
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+  }
+  .screenshot-placeholder .ph-icon { font-size: 28px; opacity: 0.5; }
+  .screenshot-placeholder .ph-name { font-weight: 600; color: var(--accent2); font-size: 13px; }
+  .screenshot-placeholder .ph-desc { font-size: 11px; opacity: 0.7; }
+
+  /* ===== COLUMNS ===== */
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .cols-6040 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  /* ===== ROUTING TIERS ===== */
+  .tier {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .tier-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+  .tier-label { font-size: 13px; font-weight: 700; color: var(--text); min-width: 120px; }
+  .tier-conf  { font-size: 11px; color: var(--accent); font-family: monospace; min-width: 100px; }
+  .tier-desc  { font-size: 12px; color: var(--text-dim); }
+
+  /* ===== SCORING TABLE ===== */
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(30,58,95,0.3);
+  }
+  .score-row:last-child { border-bottom: none; }
+  .score-factor { flex: 1; font-size: 13px; color: var(--text); }
+  .score-bar-wrap { width: 120px; height: 6px; background: rgba(30,58,95,0.5); border-radius: 3px; overflow: hidden; }
+  .score-bar { height: 100%; background: var(--accent); border-radius: 3px; }
+  .score-pts { font-size: 13px; font-weight: 700; color: var(--accent); width: 60px; text-align: right; }
+
+  /* ===== PIPELINE ===== */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 16px 0;
+  }
+  .pipeline-stage {
+    flex: 1;
+    text-align: center;
+    padding: 10px 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .pipeline-stage.active {
+    background: linear-gradient(135deg, #1e3a6e, #163059);
+    border-color: var(--accent);
+    color: var(--accent2);
+    font-weight: 700;
+  }
+  .pipeline-arrow {
+    color: var(--text-muted);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ===== LEAD BADGE ===== */
+  .lead-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .lead-hot  { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .lead-warm { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .lead-cold { background: rgba(96,165,250,0.15); color: #93c5fd; border: 1px solid rgba(96,165,250,0.3); }
+
+  /* ===== INSIGHT CARD ===== */
+  .insight {
+    display: flex;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .insight-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .insight p { margin: 0; font-size: 12.5px; color: var(--text-dim); }
+
+  /* ===== ROADMAP ===== */
+  .roadmap-phase {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .phase-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .phase-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  /* ===== ARCHITECTURE ===== */
+  .arch-layer {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .arch-layer-icon { font-size: 20px; width: 30px; text-align: center; flex-shrink: 0; }
+  .arch-layer-name { font-size: 12px; font-weight: 700; color: var(--accent2); min-width: 120px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .arch-layer-desc { font-size: 12px; color: var(--text-dim); flex: 1; }
+  .arch-arrow { text-align: center; color: var(--border); font-size: 16px; margin: -2px 0; }
+
+  /* ===== COMPARE GRID ===== */
+  .compare-highlight { background: rgba(59,130,246,0.08); }
+  .compare-highlight td { color: var(--accent2) !important; font-weight: 700; }
+  td.green-val { color: #34d399 !important; font-weight: 600; }
+  td.red-val   { color: #f87171 !important; }
+
+  /* ===== TITLE SLIDE SPECIAL ===== */
+  .title-slide .slide-body {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: radial-gradient(ellipse at center, #0f1f3d 0%, #0b0f1a 70%);
+  }
+
+  .title-logo {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .title-main {
+    font-size: 36px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, #93c5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .title-sub {
+    font-size: 20px;
+    color: var(--accent2);
+    font-weight: 400;
+    margin-bottom: 32px;
+  }
+
+  .title-tag {
+    display: inline-block;
+    padding: 6px 20px;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 30px;
+    font-size: 13px;
+    color: var(--accent2);
+    font-style: italic;
+    margin-bottom: 40px;
+  }
+
+  .title-pills {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .title-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .title-pill span { font-size: 16px; }
+
+  /* ===== VISION GRID ===== */
+  .vision-row {
+    display: grid;
+    grid-template-columns: 1fr 24px 1fr 24px 1fr;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 12px;
+  }
+  .vision-col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .vision-col h3 { font-size: 11px; margin-bottom: 10px; }
+  .vision-col ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .vision-col ul li { font-size: 12px; color: var(--text-dim); display: flex; gap: 8px; }
+  .vision-col ul li::before { content: '→'; color: var(--accent); flex-shrink: 0; }
+  .vision-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent2); font-size: 18px; }
+
+  /* ===== PROGRESS BAR ===== */
+  .bar-wrap { background: rgba(30,58,95,0.4); border-radius: 4px; height: 8px; overflow: hidden; margin-top: 4px; }
+  .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent-glow), var(--accent)); }
+
+  /* ===== NAVIGATION (screen only) ===== */
+  @media screen {
+    body { padding: 40px 20px; }
+    .toc {
+      max-width: var(--slide-w);
+      margin: 0 auto 40px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 32px;
+    }
+    .toc h3 { color: var(--accent2); margin-bottom: 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+    .toc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .toc a {
+      display: block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .toc a:hover {
+      background: rgba(59,130,246,0.1);
+      border-color: var(--border);
+      color: var(--accent2);
+    }
+  }
+
+  /* ===== PRINT ===== */
+  @media print {
+    html, body { background: white; }
+    body { padding: 0; }
+    .toc { display: none; }
+
+    .slide {
+      width: 100%;
+      min-height: 0;
+      height: 100vh;
+      margin: 0;
+      border-radius: 0;
+      border: none;
+      page-break-after: always;
+      break-after: page;
+      box-shadow: none;
+    }
+
+    .slide:last-child {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+
+    :root {
+      --bg-deep:  #f0f4f8;
+      --bg-slide: #ffffff;
+      --bg-card:  #f1f5f9;
+      --bg-card2: #e2e8f0;
+      --border:   #cbd5e1;
+      --accent:   #1d4ed8;
+      --accent2:  #2563eb;
+      --text:     #1e293b;
+      --text-dim: #475569;
+      --text-muted: #94a3b8;
+    }
+
+    .code-block { background: #f8fafc; color: #1e3a5f; border-color: #cbd5e1; }
+    .title-main { -webkit-text-fill-color: var(--accent); }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TABLE OF CONTENTS (screen only) -->
+<nav class="toc">
+  <h3>📋 Ipoteka Bank · AI Customer Intelligence Platform · Июнь 2026</h3>
+  <div class="toc-grid">
+    <a href="#slide1">1 · Трансформация</a>
+    <a href="#slide2">2 · Проблемы процесса</a>
+    <a href="#slide3">3 · Платформа</a>
+    <a href="#slide4">4 · Путь клиента</a>
+    <a href="#slide5">5 · AI Консультант</a>
+    <a href="#slide6">6 · Лидогенерация</a>
+    <a href="#slide7">7 · Dashboard</a>
+    <a href="#slide8">8 · Диалоги</a>
+    <a href="#slide9">9 · Жалобы</a>
+    <a href="#slide10">10 · Инсайты</a>
+    <a href="#slide11">11 · Voice AI</a>
+    <a href="#slide12">12 · Бизнес-эффект</a>
+    <a href="#slide13">13 · Архитектура</a>
+    <a href="#slide14">14 · Plan внедрения</a>
+    <a href="#slide15">15 · Видение</a>
+  </div>
+</nav>
+
+<!-- ================================================================ -->
+<!-- SLIDE 1: TITLE                                                    -->
+<!-- ================================================================ -->
+<section class="slide title-slide" id="slide1">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 01 / 15</span>
+    <span class="brand">Ipoteka Bank · Конфиденциально · Июнь 2026</span>
+  </div>
+  <div class="slide-body">
+    <div class="title-logo">🏦</div>
+    <div class="title-main">AI Customer Intelligence Platform</div>
+    <div class="title-sub">Трансформация клиентского обслуживания<br>с помощью искусственного интеллекта</div>
+    <div class="title-tag">«Это не чат-бот. Это интеллектуальная платформа управления клиентским опытом.»</div>
+    <div class="title-pills">
+      <div class="title-pill"><span>✅</span> Работающая система — не концепция</div>
+      <div class="title-pill"><span>🔗</span> Полный стек: виджет + CRM + аналитика + AI</div>
+      <div class="title-pill"><span>🚀</span> Готовность к масштабированию</div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Ipoteka Bank · Цифровой банкинг следующего поколения</span>
+    <span>Конфиденциально</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 2: PROBLEMS                                                  -->
+<!-- ================================================================ -->
+<section class="slide" id="slide2">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 02 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Проблемы текущего процесса</div>
+    <div class="slide-subtitle">Что происходит без платформы</div>
+    <div class="accent-line"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Проблема</th>
+          <th>Последствие</th>
+          <th>Масштаб</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>🔁 Перегрузка контакт-центра</strong></td>
+          <td>Операторы отвечают на одни и те же вопросы 50–70 раз в день</td>
+          <td><span class="badge badge-red">↑ FTE-затраты</span></td>
+        </tr>
+        <tr>
+          <td><strong>💸 Потеря лидов</strong></td>
+          <td>Клиент интересуется ипотекой в 22:00 — некому ответить</td>
+          <td><span class="badge badge-red">Упущенная выручка</span></td>
+        </tr>
+        <tr>
+          <td><strong>🙈 Невидимые жалобы</strong></td>
+          <td>8 категорий проблем не отслеживаются системно</td>
+          <td><span class="badge badge-gold">Репутационный риск</span></td>
+        </tr>
+        <tr>
+          <td><strong>📊 Отсутствие аналитики</strong></td>
+          <td>Руководство не знает, что спрашивают клиенты</td>
+          <td><span class="badge badge-gold">Решения без данных</span></td>
+        </tr>
+        <tr>
+          <td><strong>🔀 Разрыв между каналами</strong></td>
+          <td>Оператор не знает контекст клиента до звонка</td>
+          <td><span class="badge badge-gold">Низкое качество сервиса</span></td>
+        </tr>
+        <tr>
+          <td><strong>🌙 Нет ночного покрытия</strong></td>
+          <td>18:00 – 09:00 = мёртвая зона для клиентов</td>
+          <td><span class="badge badge-red">Отток к конкурентам</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:20px; padding:14px 20px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:8px; font-size:14px; color:#fca5a5; text-align:center;">
+      💡 Стоимость каждого из этих пунктов — <strong>миллионы сумов</strong> упущенной выручки и роста затрат ежегодно
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Анализ текущего состояния</span>
+    <span>2 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 3: PLATFORM OVERVIEW                                         -->
+<!-- ================================================================ -->
+<section class="slide" id="slide3">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 03 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Banking Customer Intelligence Platform</div>
+    <div class="slide-subtitle">Пять компонентов единой системы — всё работает прямо сейчас</div>
+    <div class="accent-line"></div>
+    <div class="cols-2" style="gap:16px;">
+      <div>
+        <div class="card" style="margin-bottom:12px; border-left:3px solid #3b82f6;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:20px;">🤖</span>
+            <strong style="font-size:14px;color:#60a5fa;">1. AI Financial Advisor</strong>
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0;">Персональный банкир 24/7 на UZ + RU<br>GPT-4o-mini · pgvector · 4-уровневый роутинг</p>
+        </div>
+        <div class="card" style="margin-bottom:12px; border-left:3px solid #10b981;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:20px;">👥</span>
+            <strong style="font-size:14px;color:#34d399;">2. Lead Intelligence Engine</strong>
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0;">Автоматический захват лидов + скоринг 0–100<br>5-этапная CRM-воронка + история переходов</p>
+        </div>
+        <div class="card" style="border-left:3px solid #ef4444;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:20px;">⚠️</span>
+            <strong style="font-size:14px;color:#f87171;">3. Complaint Analytics</strong>
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0;">8 категорий жалоб + автообнаружение эскалаций<br>Тренды · алерты · приоритизация</p>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:12px; border-left:3px solid #f59e0b;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:20px;">📊</span>
+            <strong style="font-size:14px;color:#fbbf24;">4. Management Intelligence Dashboard</strong>
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0;">KPI в реальном времени + воронка лидов<br>Топ продуктов · активность · AI-инсайты</p>
+        </div>
+        <div class="card" style="margin-bottom:12px; border-left:3px solid #a855f7;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:20px;">💬</span>
+            <strong style="font-size:14px;color:#c084fc;">5. Conversation Intelligence</strong>
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0;">Полная история диалогов + контекст до звонка<br>Фильтрация по языку / интенту / лиду / жалобе</p>
+        </div>
+        <div style="padding:14px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:6px;">⚡</div>
+          <div style="font-size:12px;color:var(--accent2);font-weight:700;">Все компоненты интегрированы</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Единая платформа · Единая база данных · Единая аналитика</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Обзор платформы</span>
+    <span>3 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 4: CUSTOMER JOURNEY                                          -->
+<!-- ================================================================ -->
+<section class="slide" id="slide4">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 04 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Путь клиента: от вопроса до сделки</div>
+    <div class="slide-subtitle">Как работает платформа end-to-end</div>
+    <div class="accent-line"></div>
+    <div class="cols-2" style="gap:32px;align-items:start;">
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-icon">👤</div>
+          <div class="flow-content">
+            <strong>Клиент пишет на сайте банка</strong>
+            <span>Любое время суток · Любой вопрос · 24/7</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-icon">🤖</div>
+          <div class="flow-content">
+            <strong>AI Финансовый Консультант</strong>
+            <span>Анализ языка, интента, уверенности</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-icon">🔀</div>
+          <div class="flow-content">
+            <strong>4-уровневый RAG роутинг</strong>
+            <div style="margin-top:8px;">
+              <div class="tier" style="padding:6px 10px;margin-bottom:4px;">
+                <span class="tier-icon">⚡</span>
+                <span class="tier-label" style="min-width:80px;font-size:12px;">FAQ Direct</span>
+                <span class="tier-conf">≥88%</span>
+                <span class="tier-desc">&lt;200мс ответ</span>
+              </div>
+              <div class="tier" style="padding:6px 10px;margin-bottom:4px;">
+                <span class="tier-icon">📚</span>
+                <span class="tier-label" style="min-width:80px;font-size:12px;">KB Context</span>
+                <span class="tier-conf">≥50%</span>
+                <span class="tier-desc">База знаний</span>
+              </div>
+              <div class="tier" style="padding:6px 10px;margin-bottom:4px;">
+                <span class="tier-icon">🧠</span>
+                <span class="tier-label" style="min-width:80px;font-size:12px;">LLM Only</span>
+                <span class="tier-conf">&gt;25%</span>
+                <span class="tier-desc">GPT-4o-mini</span>
+              </div>
+              <div class="tier" style="padding:6px 10px;">
+                <span class="tier-icon">📞</span>
+                <span class="tier-label" style="min-width:80px;font-size:12px;">Эскалация</span>
+                <span class="tier-conf">&lt;25%</span>
+                <span class="tier-desc">К оператору</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-icon">🎯</div>
+          <div class="flow-content">
+            <strong>Определение банковского интереса</strong>
+            <span>Ипотека · Кредит · Вклад · Карта · Автокредит · Инвестиции</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-icon">📋</div>
+          <div class="flow-content">
+            <strong>Lead Capture Engine</strong>
+            <span>Форма захвата: имя + телефон<br>Скоринг 0–100 · HOT / WARM / COLD</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-icon">🗂️</div>
+          <div class="flow-content">
+            <strong>CRM Pipeline</strong>
+            <span>Новый → Связались → Квалифицирован → Конвертирован</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-icon">🏆</div>
+          <div class="flow-content">
+            <strong>Специалист банка + Сделка</strong>
+            <span>Звонит с полным контекстом диалога · Без «чем могу помочь?»</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:16px;">
+      💡 Ключевое отличие: оператор звонит клиенту, уже зная — что его интересует, на каком языке общается, что именно спрашивал в чате.
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Customer Journey</span>
+    <span>4 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 5: CLIENT WIDGET                                             -->
+<!-- ================================================================ -->
+<section class="slide" id="slide5">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 05 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Клиентская часть: AI Финансовый Консультант</div>
+    <div class="slide-subtitle">Интерфейс виджета — реализовано</div>
+    <div class="accent-line"></div>
+    <div class="cols-2">
+      <div>
+        <div class="screenshot-placeholder" style="height:280px;">
+          <div class="ph-icon">📸</div>
+          <div class="ph-name">SS-03: Виджет открыт</div>
+          <div class="ph-desc">03_widget_greeting.png<br>400×620px · localhost:5173</div>
+        </div>
+      </div>
+      <div>
+        <h2 style="font-size:14px;margin-bottom:12px;">Технические характеристики</h2>
+        <ul class="blist" style="margin-bottom:14px;">
+          <li>Встраивается одной строкой кода</li>
+          <li>400×620px десктоп / полный экран мобильный</li>
+          <li>Анимированное открытие, типрайтер-приветствие</li>
+          <li>Стриминг ответов (Server-Sent Events)</li>
+        </ul>
+        <h2 style="font-size:14px;margin-bottom:10px;">Языковые возможности</h2>
+        <div class="card-row" style="margin-bottom:14px;">
+          <div class="card" style="text-align:center;padding:10px;">
+            <div style="font-size:20px;">🇺🇿</div>
+            <div style="font-size:12px;color:var(--accent2);font-weight:700;margin-top:4px;">Узбекский</div>
+            <div style="font-size:11px;color:var(--text-muted);">латиница · автоопределение</div>
+          </div>
+          <div class="card" style="text-align:center;padding:10px;">
+            <div style="font-size:20px;">🇷🇺</div>
+            <div style="font-size:12px;color:var(--accent2);font-weight:700;margin-top:4px;">Русский</div>
+            <div style="font-size:11px;color:var(--text-muted);">полная поддержка</div>
+          </div>
+        </div>
+        <h2 style="font-size:14px;margin-bottom:10px;">Quick Actions</h2>
+        <ul class="blist">
+          <li>Динамические чипы под ответом AI</li>
+          <li>Привязаны к интенту (≥80% уверенность)</li>
+          <li>При покупательском интенте → лид-чипы</li>
+          <li>Аналитика кликов по языку и интенту</li>
+        </ul>
+        <div style="margin-top:12px;padding:8px 12px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:6px;font-size:11px;color:#6ee7b7;">
+          🔒 «Ответы носят информационный характер. За официальными решениями обратитесь к специалисту.»
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>AI Financial Advisor · Клиентский виджет</span>
+    <span>5 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 6: LEAD GENERATION                                           -->
+<!-- ================================================================ -->
+<section class="slide" id="slide6">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 06 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Лидогенерация: от интереса к сделке</div>
+    <div class="slide-subtitle">Автоматический захват, скоринг и CRM-воронка — реализовано</div>
+    <div class="accent-line"></div>
+    <div class="cols-2">
+      <div>
+        <h2 style="font-size:13px;margin-bottom:12px;">Скоринговая модель 0–100</h2>
+        <div class="score-row">
+          <span class="score-factor">📞 Указал телефон</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:90%"></div></div>
+          <span class="score-pts">+45</span>
+        </div>
+        <div class="score-row">
+          <span class="score-factor">👤 Указал имя</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:30%"></div></div>
+          <span class="score-pts">+15</span>
+        </div>
+        <div class="score-row">
+          <span class="score-factor">🏦 Конкретный продукт</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:30%"></div></div>
+          <span class="score-pts">+15</span>
+        </div>
+        <div class="score-row">
+          <span class="score-factor">📝 Сообщение &gt;40 символов</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:20%"></div></div>
+          <span class="score-pts">+10</span>
+        </div>
+        <div class="score-row">
+          <span class="score-factor">🤖 AI уверенность &gt;70%</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:20%"></div></div>
+          <span class="score-pts">+10</span>
+        </div>
+        <div class="score-row">
+          <span class="score-factor">📲 Тип «Обратный звонок»</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:10%"></div></div>
+          <span class="score-pts">+5</span>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
+          <span class="lead-badge lead-hot">🔥 HOT 90–100</span>
+          <span class="lead-badge lead-warm">♨️ WARM 70–89</span>
+          <span class="lead-badge lead-cold">🧊 COLD &lt;70</span>
+        </div>
+      </div>
+      <div>
+        <h2 style="font-size:13px;margin-bottom:12px;">5-этапная CRM-воронка</h2>
+        <div class="pipeline">
+          <div class="pipeline-stage active">Новый</div>
+          <div class="pipeline-arrow">›</div>
+          <div class="pipeline-stage">Связались</div>
+          <div class="pipeline-arrow">›</div>
+          <div class="pipeline-stage">Квалифицирован</div>
+          <div class="pipeline-arrow">›</div>
+          <div class="pipeline-stage">Конвертирован</div>
+          <div class="pipeline-arrow">›</div>
+          <div class="pipeline-stage">Закрыт</div>
+        </div>
+        <ul class="blist" style="margin-top:14px;margin-bottom:14px;">
+          <li>Валидация переходов на сервере</li>
+          <li>Полная история статусов с временными метками</li>
+          <li>Тост-уведомления оператору</li>
+          <li>Кнопка «Открыть диалог» — контекст до звонка</li>
+        </ul>
+        <div class="screenshot-placeholder" style="height:140px;">
+          <div class="ph-icon">📸</div>
+          <div class="ph-name">SS-17: Leads Page</div>
+          <div class="ph-desc">17_leads_page.png · localhost:5173/admin/leads</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Lead Intelligence Engine</span>
+    <span>6 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 7: DASHBOARD                                                 -->
+<!-- ================================================================ -->
+<section class="slide" id="slide7">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 07 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Панель управления: Intelligence Dashboard</div>
+    <div class="slide-subtitle">Что видит руководство в реальном времени — реализовано</div>
+    <div class="accent-line"></div>
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-icon">💬</div>
+        <div class="kpi-val">1 247</div>
+        <div class="kpi-lbl">Всего диалогов</div>
+        <div class="kpi-sub">4 891 сообщений</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-val">38</div>
+        <div class="kpi-lbl">Лидов захвачено</div>
+        <div class="kpi-sub">5 🔥 · 12 ♨️ · 21 🧊</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-val">12</div>
+        <div class="kpi-lbl">Жалобы</div>
+        <div class="kpi-sub">3 критичных</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🤖</div>
+        <div class="kpi-val">87.3%</div>
+        <div class="kpi-lbl">AI решено</div>
+        <div class="kpi-sub">без оператора</div>
+      </div>
+    </div>
+    <div class="cols-2" style="gap:16px;flex:1;">
+      <div>
+        <h3 style="font-size:11px;margin-bottom:10px;">Воронка лидов</h3>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;color:var(--text-dim);min-width:90px;">Новые</span>
+            <div class="bar-wrap" style="flex:1;"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div>
+            <span style="font-size:11px;color:var(--text-dim);min-width:24px;">38</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;color:var(--text-dim);min-width:90px;">Связались</span>
+            <div class="bar-wrap" style="flex:1;"><div class="bar-fill" style="width:71%;"></div></div>
+            <span style="font-size:11px;color:var(--text-dim);min-width:24px;">27</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;color:var(--text-dim);min-width:90px;">Квалифицирован</span>
+            <div class="bar-wrap" style="flex:1;"><div class="bar-fill" style="width:45%;"></div></div>
+            <span style="font-size:11px;color:var(--text-dim);min-width:24px;">17</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;color:var(--text-dim);min-width:90px;">Конвертирован</span>
+            <div class="bar-wrap" style="flex:1;"><div class="bar-fill" style="width:18%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+            <span style="font-size:11px;color:var(--text-dim);min-width:24px;">7</span>
+          </div>
+        </div>
+        <h3 style="font-size:11px;margin:14px 0 8px;">Топ продуктов по спросу</h3>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:100px;color:var(--text-dim);">💰 Депозиты</span><div class="bar-wrap" style="flex:1;"><div class="bar-fill" style="width:68%;"></div></div><span style="font-size:10px;color:#34d399;">↑ +12%</span></div>
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:100px;color:var(--text-dim);">🏠 Кредиты</span><div class="bar-wrap" style="flex:1;"><div class="bar-fill" style="width:44%;"></div></div><span style="font-size:10px;color:#34d399;">↑ +8%</span></div>
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:100px;color:var(--text-dim);">💳 Карты</span><div class="bar-wrap" style="flex:1;"><div class="bar-fill" style="width:36%;"></div></div><span style="font-size:10px;color:var(--text-muted);">→</span></div>
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:100px;color:var(--text-dim);">📱 Мобильный</span><div class="bar-wrap" style="flex:1;"><div class="bar-fill" style="width:22%;"></div></div><span style="font-size:10px;color:#f87171;">↓ -3%</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="screenshot-placeholder" style="height:100%;">
+          <div class="ph-icon">📸</div>
+          <div class="ph-name">SS-11: Dashboard Full</div>
+          <div class="ph-desc">11_dashboard_full.png<br>localhost:5173/admin</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Management Intelligence Dashboard</span>
+    <span>7 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 8: CONVERSATIONS                                             -->
+<!-- ================================================================ -->
+<section class="slide" id="slide8">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 08 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Работа с диалогами: контекст до звонка</div>
+    <div class="slide-subtitle">Что видит оператор перед звонком клиенту — реализовано</div>
+    <div class="accent-line"></div>
+    <div class="cols-2">
+      <div>
+        <h2 style="font-size:13px;margin-bottom:12px;">Список диалогов</h2>
+        <ul class="blist" style="margin-bottom:16px;">
+          <li>Поиск по тексту сообщений</li>
+          <li>Фильтр: Все / 🇺🇿 UZ / 🇷🇺 RU</li>
+          <li>Пагинация по 20 диалогов</li>
+          <li>Теги 👥 (лид) / ⚠️ (жалоба) для каждого</li>
+          <li>Топ-интент: Кредиты / Депозиты / Карты / Другое</li>
+        </ul>
+        <h2 style="font-size:13px;margin-bottom:12px;">Детальный просмотр</h2>
+        <ul class="blist" style="margin-bottom:16px;">
+          <li>Полная переписка в виде chat-bubble</li>
+          <li>Метаданные: язык, кол-во сообщений, дата</li>
+          <li>Интент: «🎯 Интерес: Кредиты»</li>
+          <li>Сигналы жалоб помечены «⚠ Сигнал жалобы»</li>
+        </ul>
+        <h2 style="font-size:13px;margin-bottom:12px;">Связь с CRM</h2>
+        <ul class="blist">
+          <li>Кнопка «💬 Открыть диалог» из карточки лида</li>
+          <li>Прямой переход к переписке — без поиска</li>
+          <li>0 секунд на сбор контекста</li>
+        </ul>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="screenshot-placeholder" style="flex:1;">
+          <div class="ph-icon">📸</div>
+          <div class="ph-name">SS-16: Conversation Detail</div>
+          <div class="ph-desc">16_conversation_detail.png<br>localhost:5173/admin/conversations</div>
+        </div>
+        <div class="quote" style="margin:0;">
+          «Я звоню клиенту и уже знаю: он интересовался ипотекой, написал 8 сообщений, оставил заявку в 23:15. Разговор начинается с полного контекста, а не с нуля.»
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Conversation Intelligence</span>
+    <span>8 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 9: COMPLAINTS                                                -->
+<!-- ================================================================ -->
+<section class="slide" id="slide9">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 09 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Аналитика жалоб: видимость проблем</div>
+    <div class="slide-subtitle">8 категорий автоматической классификации — реализовано</div>
+    <div class="accent-line"></div>
+    <div class="cols-2" style="gap:24px;">
+      <div>
+        <table>
+          <thead>
+            <tr><th>Категория</th><th>Приоритет</th><th>Примеры сигналов</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>📱 Мобильное приложение</td>
+              <td><span class="prio-red">🔴 Высокий</span></td>
+              <td style="font-size:11px;color:var(--text-muted);">«ilova ishlamayapti», «crash»</td>
+            </tr>
+            <tr>
+              <td>💳 Карты</td>
+              <td><span class="prio-red">🔴 Высокий</span></td>
+              <td style="font-size:11px;color:var(--text-muted);">«карта заблокирована»</td>
+            </tr>
+            <tr>
+              <td>↔️ Переводы</td>
+              <td><span class="prio-red">🔴 Высокий</span></td>
+              <td style="font-size:11px;color:var(--text-muted);">«pul yo'qoldi», «деньги»</td>
+            </tr>
+            <tr>
+              <td>🔐 Авторизация / OTP</td>
+              <td><span class="prio-red">🔴 Высокий</span></td>
+              <td style="font-size:11px;color:var(--text-muted);">«SMS не приходит»</td>
+            </tr>
+            <tr>
+              <td>🏠 Кредиты</td>
+              <td><span class="prio-yellow">🟡 Средний</span></td>
+              <td style="font-size:11px;color:var(--text-muted);">«отказали», «stavka yuqori»</td>
+            </tr>
+            <tr>
+              <td>🏢 Отделения</td>
+              <td><span class="prio-yellow">🟡 Средний</span></td>
+              <td style="font-size:11px;color:var(--text-muted);">«очередь», «грубый»</td>
+            </tr>
+            <tr>
+              <td>💰 Вклады / Депозиты</td>
+              <td><span class="prio-green">🟢 Низкий</span></td>
+              <td style="font-size:11px;color:var(--text-muted);">«проценты не начислены»</td>
+            </tr>
+            <tr>
+              <td>⭐ Качество сервиса</td>
+              <td><span class="prio-green">🟢 Низкий</span></td>
+              <td style="font-size:11px;color:var(--text-muted);">«shikoyat», «недоволен»</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px;border-left:3px solid #ef4444;">
+          <div style="font-size:13px;font-weight:700;color:#f87171;margin-bottom:8px;">🚨 Автоматическая эскалация</div>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">Если за 24 часа 10+ жалоб одной категории — система создаёт алерт для руководства <em>без дежурного</em>:</p>
+          <div class="code-block" style="font-size:10.5px;">Mobile App: 14 complaints / 24h
+Severity: HIGH
+Auto-detected: true
+→ Эскалация создана автоматически</div>
+        </div>
+        <div class="card" style="border-left:3px solid #f59e0b;">
+          <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-bottom:8px;">📈 Тренды</div>
+          <ul class="blist">
+            <li>Каждая категория: ↑ растёт / ↓ снижается / – стабильно</li>
+            <li>Авто-алерт при аномальном росте +40%</li>
+            <li>До появления жалоб в публичном пространстве</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Complaint Analytics</span>
+    <span>9 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 10: INSIGHTS                                                 -->
+<!-- ================================================================ -->
+<section class="slide" id="slide10">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 10 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Клиентские инсайты: что говорят данные</div>
+    <div class="slide-subtitle">Аналитика в реальном времени — реализовано</div>
+    <div class="accent-line"></div>
+    <div class="cols-2" style="gap:24px;">
+      <div>
+        <h2 style="font-size:13px;margin-bottom:12px;">Топ-интенты — что спрашивают клиенты</h2>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;min-width:110px;color:var(--text);">💰 Депозиты</span>
+            <div class="bar-wrap" style="flex:1;height:10px;"><div class="bar-fill" style="width:68%;background:linear-gradient(90deg,#1d4ed8,#3b82f6);"></div></div>
+            <span style="font-size:11px;color:var(--text);min-width:28px;">34%</span>
+            <span style="font-size:11px;color:#34d399;">↑ +12%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;min-width:110px;color:var(--text);">🏠 Кредиты</span>
+            <div class="bar-wrap" style="flex:1;height:10px;"><div class="bar-fill" style="width:44%;"></div></div>
+            <span style="font-size:11px;color:var(--text);min-width:28px;">22%</span>
+            <span style="font-size:11px;color:#34d399;">↑ +8%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;min-width:110px;color:var(--text);">💳 Карты</span>
+            <div class="bar-wrap" style="flex:1;height:10px;"><div class="bar-fill" style="width:36%;"></div></div>
+            <span style="font-size:11px;color:var(--text);min-width:28px;">18%</span>
+            <span style="font-size:11px;color:var(--text-muted);">→</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;min-width:110px;color:var(--text);">📱 Мобильный</span>
+            <div class="bar-wrap" style="flex:1;height:10px;"><div class="bar-fill" style="width:22%;"></div></div>
+            <span style="font-size:11px;color:var(--text);min-width:28px;">11%</span>
+            <span style="font-size:11px;color:#f87171;">↓ -3%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;min-width:110px;color:var(--text);">🏢 Отделения</span>
+            <div class="bar-wrap" style="flex:1;height:10px;"><div class="bar-fill" style="width:18%;"></div></div>
+            <span style="font-size:11px;color:var(--text);min-width:28px;">9%</span>
+            <span style="font-size:11px;color:var(--text-muted);">→</span>
+          </div>
+        </div>
+        <h2 style="font-size:13px;margin-bottom:10px;">Метрики качества AI</h2>
+        <div class="kpi-row" style="grid-template-columns:1fr 1fr;">
+          <div class="kpi-card" style="padding:10px;">
+            <div class="kpi-val" style="font-size:18px;">87%+</div>
+            <div class="kpi-lbl" style="font-size:10px;">Containment Rate</div>
+          </div>
+          <div class="kpi-card" style="padding:10px;">
+            <div class="kpi-val" style="font-size:18px;">&lt;200мс</div>
+            <div class="kpi-lbl" style="font-size:10px;">Скорость FAQ</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2 style="font-size:13px;margin-bottom:12px;">AI-инсайты (генерируются GPT-4o-mini)</h2>
+        <div class="insight">
+          <div class="insight-dot"></div>
+          <p>«Депозиты» — самый запрашиваемый продукт: 34% всех диалогов, рост +12%. <strong style="color:var(--accent2);">Сигнал для маркетинга.</strong></p>
+        </div>
+        <div class="insight">
+          <div class="insight-dot"></div>
+          <p>AI решает 87% обращений без операторов — <strong style="color:var(--accent2);">1 089 клиентов</strong> получили помощь без звонка в банк.</p>
+        </div>
+        <div class="insight" style="border-color:rgba(239,68,68,0.3);">
+          <div class="insight-dot" style="background:#ef4444;"></div>
+          <p>Жалобы на мобильное приложение выросли на 40% — <strong style="color:#f87171;">требует внимания IT-команды.</strong></p>
+        </div>
+        <div class="insight" style="border-color:rgba(16,185,129,0.3);">
+          <div class="insight-dot" style="background:#10b981;"></div>
+          <p>38 лидов за период, из них 5 HOT🔥. <strong style="color:#34d399;">2 сделки закрыто.</strong></p>
+        </div>
+        <div class="insight">
+          <div class="insight-dot"></div>
+          <p>Клиенты на UZ языке — ~45% сессий. <strong style="color:var(--accent2);">Языковой паритет достигнут.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Customer Insights &amp; AI Analytics</span>
+    <span>10 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 11: VOICE INTELLIGENCE                                       -->
+<!-- ================================================================ -->
+<section class="slide" id="slide11">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 11 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Будущее развитие: Voice Intelligence</div>
+    <div class="slide-subtitle">Архитектура уже заложена в коде — не новый проект, следующий модуль</div>
+    <div class="accent-line"></div>
+    <div class="cols-2" style="gap:24px;">
+      <div>
+        <h2 style="font-size:13px;margin-bottom:10px;">Реализовано в коде (инфраструктура):</h2>
+        <div class="code-block">CREATE TABLE voice_calls (
+  transcript        text,
+  whisper_segments  jsonb,  -- Whisper STT
+  classification    jsonb,  -- авто-класс.
+  sentiment         text,   -- positive /
+                            -- frustrated /
+                            -- angry
+  category          text,
+  topics            text[],
+  requires_followup boolean,
+  external_call_id  text    -- Asterisk/Twilio
+);</div>
+        <div style="margin-top:14px;padding:12px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:6px;">
+          <div style="font-size:12px;color:var(--accent2);font-weight:700;margin-bottom:6px;">📞 Нужна только интеграция:</div>
+          <ul class="blist">
+            <li style="font-size:12px;">Телефония: Asterisk / Twilio</li>
+            <li style="font-size:12px;">180 дней — не 18 месяцев</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <h2 style="font-size:13px;margin-bottom:12px;">Дорожная карта Voice AI</h2>
+        <div class="roadmap-phase" style="margin-bottom:10px;">
+          <div class="phase-label">Сейчас · Готово</div>
+          <div class="phase-title">Chat Intelligence</div>
+          <ul class="blist">
+            <li style="font-size:12px;">Чат 24/7 · Lead capture · Complaint detect</li>
+            <li style="font-size:12px;">Dashboard · CRM · AI Insights</li>
+          </ul>
+        </div>
+        <div class="roadmap-phase" style="margin-bottom:10px;border-color:rgba(245,158,11,0.4);">
+          <div class="phase-label" style="color:#f59e0b;">Фаза 2 · 180 дней</div>
+          <div class="phase-title">Voice Analytics</div>
+          <ul class="blist">
+            <li style="font-size:12px;">Запись звонков → Speech-to-Text (Whisper)</li>
+            <li style="font-size:12px;">Автоклассификация: тема + сентимент</li>
+          </ul>
+        </div>
+        <div class="roadmap-phase" style="border-color:rgba(168,85,247,0.4);">
+          <div class="phase-label" style="color:#a855f7;">Фаза 3 · 360 дней</div>
+          <div class="phase-title">Agent Assist &amp; 360° View</div>
+          <ul class="blist">
+            <li style="font-size:12px;">Подсказки оператору в реальном времени</li>
+            <li style="font-size:12px;">Чат + звонок + приложение в одной платформе</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Voice Intelligence · Architecture Ready</span>
+    <span>11 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 12: BUSINESS IMPACT                                          -->
+<!-- ================================================================ -->
+<section class="slide" id="slide12">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 12 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Бизнес-эффект: измеримые результаты</div>
+    <div class="slide-subtitle">Ожидаемые показатели и сравнение с альтернативами</div>
+    <div class="accent-line"></div>
+    <div class="cols-2" style="gap:24px;">
+      <div>
+        <div class="card" style="margin-bottom:12px;border-left:3px solid #3b82f6;">
+          <div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:8px;">📉 Снижение нагрузки на КЦ</div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0;">Цель: ≥80% диалогов без оператора<br><code style="font-size:11px;color:var(--accent);">containmentRate = 1 − escalation_rate</code><br>Из 100 запросов — 80+ решаются автоматически, 24/7</p>
+        </div>
+        <div class="card" style="margin-bottom:12px;border-left:3px solid #10b981;">
+          <div style="font-size:13px;font-weight:700;color:#34d399;margin-bottom:8px;">📈 Рост конверсии лидов</div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0;">Каждый клиент с банковским интересом → лид<br>Скоринг + сортировка → операторы звонят сначала HOT<br>Контекст диалога → короткий путь до сделки</p>
+        </div>
+        <div class="card" style="border-left:3px solid #f59e0b;">
+          <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-bottom:8px;">💡 Управленческая ценность</div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0;">Реальное время: что спрашивают клиенты<br>Жалобы видны до публичного скандала<br>Данные → приоритет разработки продуктов</p>
+        </div>
+      </div>
+      <div>
+        <h2 style="font-size:13px;margin-bottom:12px;">Сравнение с альтернативами</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Подход</th>
+              <th>Стоимость</th>
+              <th>Срок</th>
+              <th>Кастомизация</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Genesys / LivePerson</td>
+              <td class="red-val">$50k–200k/год</td>
+              <td class="red-val">6–18 мес.</td>
+              <td>Ограниченная</td>
+            </tr>
+            <tr>
+              <td>Разработка с нуля</td>
+              <td class="red-val">$200–500k</td>
+              <td class="red-val">12–24 мес.</td>
+              <td>Полная</td>
+            </tr>
+            <tr class="compare-highlight">
+              <td><strong>Эта платформа</strong></td>
+              <td class="green-val">Уже создана</td>
+              <td class="green-val">Готово</td>
+              <td class="green-val">100% банка</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px;padding:16px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:8px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:8px;">💼</div>
+          <div style="font-size:13px;color:var(--accent2);font-weight:700;margin-bottom:4px;">Ключевое сообщение</div>
+          <div style="font-size:12px;color:var(--text-dim);font-style:italic;">«Платформа — это не статья расходов.<br>Это инфраструктура конкурентоспособности.»</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Business Impact &amp; ROI</span>
+    <span>12 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 13: ARCHITECTURE                                             -->
+<!-- ================================================================ -->
+<section class="slide" id="slide13">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 13 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Техническая архитектура</div>
+    <div class="slide-subtitle">5-слойная архитектура платформы</div>
+    <div class="accent-line"></div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px;">
+      <div class="arch-layer" style="border-color:rgba(59,130,246,0.4);background:linear-gradient(135deg,#1a2a4a,#0f172a);">
+        <span class="arch-layer-icon">🌐</span>
+        <span class="arch-layer-name" style="color:#60a5fa;">Клиент</span>
+        <span class="arch-layer-desc">React 18 + Vite + Tailwind CSS · SSE стриминг · AI Виджет встраивается одной строкой</span>
+        <span class="badge badge-blue">Vercel CDN</span>
+      </div>
+      <div class="arch-arrow">↕ HTTPS / SSE</div>
+      <div class="arch-layer" style="border-color:rgba(16,185,129,0.4);">
+        <span class="arch-layer-icon">⚙️</span>
+        <span class="arch-layer-name" style="color:#34d399;">Backend</span>
+        <span class="arch-layer-desc">Node.js + Fastify · JWT · Rate Limiting · RAG Движок · Lead Service · Analytics Engine</span>
+        <span class="badge badge-green">Render</span>
+      </div>
+      <div class="arch-arrow">↕ SQL / pgvector</div>
+      <div class="arch-layer" style="border-color:rgba(245,158,11,0.4);">
+        <span class="arch-layer-icon">🗄️</span>
+        <span class="arch-layer-name" style="color:#fbbf24;">Data</span>
+        <span class="arch-layer-desc">PostgreSQL 17 + pgvector 0.8.2 · sessions · messages · leads · kb_chunks · voice_calls · 17 миграций</span>
+        <span class="badge badge-gold">Render PG</span>
+      </div>
+      <div class="arch-arrow">↕ OpenAI API</div>
+      <div class="arch-layer" style="border-color:rgba(168,85,247,0.4);">
+        <span class="arch-layer-icon">🧠</span>
+        <span class="arch-layer-name" style="color:#c084fc;">AI / ML</span>
+        <span class="arch-layer-desc">GPT-4o-mini (чат) · text-embedding-3-small 1536-dim · 4-tier: faq_direct → kb_context → llm_only → escalate</span>
+        <span class="badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border-color:rgba(168,85,247,0.3);">OpenAI</span>
+      </div>
+      <div class="arch-arrow">↕</div>
+      <div class="arch-layer" style="border-color:rgba(239,68,68,0.3);">
+        <span class="arch-layer-icon">🔐</span>
+        <span class="arch-layer-name" style="color:#f87171;">Admin</span>
+        <span class="arch-layer-desc">React SPA · JWT-авторизация · Dashboard · Leads · Conversations · Complaints · Escalations · AI Insights</span>
+        <span class="badge badge-red">JWT</span>
+      </div>
+    </div>
+    <div class="cols-2" style="gap:12px;">
+      <div class="card" style="padding:10px 14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:6px;">🔒 Безопасность</div>
+        <div style="font-size:11px;color:var(--text-dim);">JWT · Rate limit 20 req/min/IP · CORS · Нет хранения перс. данных кроме номера телефона</div>
+      </div>
+      <div class="card" style="padding:10px 14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:6px;">🏗️ Инфраструктура</div>
+        <div style="font-size:11px;color:var(--text-dim);">Auto-deploy при push в GitHub · Multi-tenant (tenant_id в каждой таблице) · Готово к Kubernetes</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Technical Architecture</span>
+    <span>13 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 14: IMPLEMENTATION PLAN                                      -->
+<!-- ================================================================ -->
+<section class="slide" id="slide14">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 14 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">План внедрения</div>
+    <div class="slide-subtitle">Четыре этапа масштабирования платформы</div>
+    <div class="accent-line"></div>
+    <div class="cols-2" style="gap:16px;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="roadmap-phase" style="border-color:rgba(16,185,129,0.5);">
+          <div class="phase-label" style="color:#10b981;">Этап 1 · Сейчас → 30 дней</div>
+          <div class="phase-title">Пилот</div>
+          <ul class="checklist">
+            <li class="check-done">Платформа развёрнута и работает</li>
+            <li class="check-done">Виджет интегрирован на сайт банка</li>
+            <li class="check-done">Dashboard и CRM готовы</li>
+            <li class="check-todo">Наполнение базы знаний (FAQ + продукты)</li>
+            <li class="check-todo">Обучение операторов работе с CRM</li>
+          </ul>
+        </div>
+        <div class="roadmap-phase">
+          <div class="phase-label">Этап 2 · 30–90 дней</div>
+          <div class="phase-title">Роллаут</div>
+          <ul class="checklist">
+            <li class="check-todo">Расширение базы знаний (полный каталог)</li>
+            <li class="check-todo">A/B тест: с виджетом vs без → конверсия</li>
+            <li class="check-todo">Интеграция с CRM / АБС банка</li>
+            <li class="check-todo">Первый отчёт по ROI</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="roadmap-phase" style="border-color:rgba(245,158,11,0.4);">
+          <div class="phase-label" style="color:#f59e0b;">Этап 3 · 90–180 дней</div>
+          <div class="phase-title">Интеграция</div>
+          <ul class="checklist">
+            <li class="check-todo">API-интеграция с core banking</li>
+            <li class="check-todo">Персонализация: история клиента → AI</li>
+            <li class="check-todo">Многоканальность: Telegram / WhatsApp</li>
+            <li class="check-todo">AI-инсайты для продуктового комитета</li>
+          </ul>
+        </div>
+        <div class="roadmap-phase" style="border-color:rgba(168,85,247,0.4);">
+          <div class="phase-label" style="color:#a855f7;">Этап 4 · 180–360 дней</div>
+          <div class="phase-title">Voice Intelligence</div>
+          <ul class="checklist">
+            <li class="check-todo">Интеграция с телефонией (Asterisk/Twilio)</li>
+            <li class="check-todo">Speech-to-Text (Whisper API)</li>
+            <li class="check-todo">Agent Assist: подсказки оператору</li>
+            <li class="check-todo">360° картина клиента: чат + звонок</li>
+          </ul>
+        </div>
+        <div style="padding:12px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;font-size:12px;color:var(--text-dim);text-align:center;">
+          ✅ Этап 1 — это не план. Это уже сделано.<br>
+          <strong style="color:var(--accent2);">Вопрос: как масштабировать максимально быстро.</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Implementation Roadmap</span>
+    <span>14 / 15</span>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 15: VISION                                                   -->
+<!-- ================================================================ -->
+<section class="slide" id="slide15">
+  <div class="slide-header">
+    <span class="slide-num">Слайд 15 / 15</span>
+    <span class="brand">Ipoteka Bank · AI Platform</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Видение платформы</div>
+    <div class="slide-subtitle">От инструмента к конкурентному преимуществу</div>
+    <div class="accent-line"></div>
+    <div class="vision-row" style="margin-bottom:16px;">
+      <div class="vision-col">
+        <h3>Было</h3>
+        <ul>
+          <li>Отвечать на вопросы</li>
+          <li>Принимать звонки</li>
+          <li>Узнавать о жалобах постфактум</li>
+          <li>Отчёты раз в квартал</li>
+        </ul>
+      </div>
+      <div class="vision-arrow">→</div>
+      <div class="vision-col" style="border-color:rgba(59,130,246,0.4);">
+        <h3 style="color:#60a5fa;">Есть сейчас</h3>
+        <ul>
+          <li>Понимать намерения</li>
+          <li>Захватывать лиды</li>
+          <li>Видеть жалобы в момент</li>
+          <li>KPI в реальном времени</li>
+        </ul>
+      </div>
+      <div class="vision-arrow">→</div>
+      <div class="vision-col" style="border-color:rgba(168,85,247,0.4);">
+        <h3 style="color:#c084fc;">Через год</h3>
+        <ul>
+          <li>Предсказывать потребности</li>
+          <li>Закрывать сделки</li>
+          <li>Предотвращать жалобы</li>
+          <li>Рекомендации от AI</li>
+        </ul>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="padding:14px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;">🕐</div>
+        <div style="font-size:12px;font-weight:700;color:#34d399;">Ни один клиент</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">больше не уходит без ответа в 23:00</div>
+      </div>
+      <div style="padding:14px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;">💰</div>
+        <div style="font-size:12px;font-weight:700;color:var(--accent2);">Ни один лид</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">больше не теряется — каждый с оценкой и контекстом</div>
+      </div>
+      <div style="padding:14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;">⚠️</div>
+        <div style="font-size:12px;font-weight:700;color:#fbbf24;">Ни одна жалоба</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">больше не станет сюрпризом — видна в момент</div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">Это не проект. Это платформа.</div>
+        <div style="font-size:13px;color:var(--accent2);">Это не расходы. Это инвестиции в конкурентоспособность.</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:var(--text-muted);">Ipoteka Bank</div>
+        <div style="font-size:11px;color:var(--text-muted);">AI Customer Intelligence Platform</div>
+        <div style="font-size:11px;color:var(--text-muted);">Июнь 2026 · Конфиденциально</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>Strategic Vision</span>
+    <span>Ipoteka Bank · Цифровая трансформация · 2026</span>
+  </div>
+</section>
+
+<!-- Print instructions (screen only) -->
+<div style="max-width:1280px;margin:24px auto 60px;padding:16px 24px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;font-size:13px;color:#34d399;" class="no-print">
+  🖨️ <strong>Печать в PDF:</strong> Ctrl+P (или Cmd+P) → «Сохранить как PDF» → Ориентация: Альбомная → Масштаб: По размеру страницы. Рекомендуется Chrome или Edge.
+</div>
+
+</body>
+</html>

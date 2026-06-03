@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>13 · Что уже работает</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .status-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; }
+    .check-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg); padding: 22px 26px;
+    }
+    .check-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 9px 0; border-bottom: 1px solid var(--border-subtle);
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-icon {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; margin-top: 1px;
+    }
+    .done  { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25); color: #34d399; }
+    .inprog { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.25); color: #fbbf24; }
+    .ci-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .ci-desc  { font-size: 11.5px; color: var(--text-secondary); line-height: 1.4; }
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 11px; font-weight: 700; color: #34d399;
+    }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.8);} }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .stat-mini { background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px 16px; }
+    .sm-value { font-size: 26px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; }
+    .sm-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Статус · Текущее состояние</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+      <h1 class="slide-title" style="margin-bottom:0;">Что <span class="accent">работает сегодня</span></h1>
+      <span class="live-badge"><span class="live-dot"></span>LIVE PRODUCTION</span>
+    </div>
+    <p class="slide-subtitle">Продукт готов к использованию. Все функции доступны на localhost:5173 прямо сейчас</p>
+
+    <div class="status-layout">
+      <!-- Left: client features -->
+      <div>
+        <div class="check-card">
+          <div class="section-label" style="margin-bottom:12px;">✅ Клиентская часть</div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">AI-чат виджет на сайте</div><div class="ci-desc">FAB-кнопка + типрайтер-приветствие + SSE-стриминг ответов</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">4-уровневый RAG-роутинг</div><div class="ci-desc">FAQ → KB → LLM → Escalate с автоматическим выбором стратегии</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Двуязычность RU + UZ</div><div class="ci-desc">Переключение в один клик, автодетект языка по тексту</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Захват лидов (8 паттернов)</div><div class="ci-desc">Автоматическая форма, скоринг, передача в CRM</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Quick Action чипы</div><div class="ci-desc">Контекстные кнопки на основе intent + confidence</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Demo-режим (?demo=1)</div><div class="ci-desc">3 автоматических сообщения для демонстрации без ввода</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: admin features + stats -->
+      <div>
+        <div class="check-card" style="margin-bottom:14px;">
+          <div class="section-label" style="margin-bottom:12px;">✅ Панель администратора (5 экранов)</div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Dashboard — KPI + графики</div><div class="ci-desc">Сессии, лиды, жалобы, AI containment, топ продуктов</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Диалоги — просмотр переписок</div><div class="ci-desc">Список + детальный вид, флаги эскалации и жалоб</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Лиды — CRM воронка</div><div class="ci-desc">Карточки с HOT/WARM/COLD, история статусов, связь с диалогом</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Жалобы — 8 категорий</div><div class="ci-desc">Приоритеты HIGH/MED/LOW, тренды, сигналы автоэскалации</div></div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon done">✓</div>
+            <div><div class="ci-title">Настройки — KB и конфиг</div><div class="ci-desc">Статистика базы знаний, авторизация JWT, платформ. инфо</div></div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-mini">
+            <div class="sm-value">313</div>
+            <div class="sm-label">Сессий в БД (демо)</div>
+          </div>
+          <div class="stat-mini">
+            <div class="sm-value">8</div>
+            <div class="sm-label">Лидов захвачено</div>
+          </div>
+          <div class="stat-mini">
+            <div class="sm-value">16</div>
+            <div class="sm-label">Миграций базы данных</div>
+          </div>
+          <div class="stat-mini">
+            <div class="sm-value">100%</div>
+            <div class="sm-label">TypeScript coverage</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

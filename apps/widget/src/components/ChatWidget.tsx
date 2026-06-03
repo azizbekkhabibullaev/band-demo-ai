@@ -19,14 +19,14 @@ const TRUST_FOOTER: Record<string, string> = {
 
 // ─── Banking interest detection ───────────────────────────────────────────────
 const INTEREST_PATTERNS: Array<{ re: RegExp; label: string }> = [
-  { re: /ипотека|ipoteka/i,                        label: 'Ипотека' },
+  { re: /ипотек|ipoteka/i,                         label: 'Ипотека' },
   { re: /автокред|avtokredit/i,                    label: 'Автокредит' },
   { re: /кредит|kredit/i,                          label: 'Кредит' },
   { re: /вклад|депозит|depozit|omonat/i,           label: 'Депозит/Вклад' },
   { re: /карт|karta/i,                             label: 'Карта' },
   { re: /инвестиц|investits|brokersk|брокер/i,     label: 'Инвестиции' },
   { re: /перевод|o.tkazm/i,                        label: 'Перевод' },
-  { re: /рассрочка|bo.lib to.l/i,                  label: 'Рассрочка' },
+  { re: /рассрочк|bo.lib to.l/i,                   label: 'Рассрочка' },
 ];
 
 function detectInterest(userText: string): string | null {

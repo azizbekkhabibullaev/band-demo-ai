@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>08 · Диалоги</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .conv-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; flex: 1; }
+    .ss-item { border-radius: 12px; overflow: hidden; border: 1px solid var(--border-mid); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .ss-item img { width: 100%; display: block; }
+    .ss-label { font-size: 10px; color: var(--text-muted); text-align: center; padding: 5px; background: var(--bg-card); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .feature-list { display: flex; flex-direction: column; gap: 12px; }
+    .feat-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md); padding: 14px 18px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .feat-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .feat-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+    .feat-desc  { font-size: 11.5px; color: var(--text-secondary); line-height: 1.4; }
+    .value-callout {
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-left: 3px solid #3b82f6;
+      border-radius: 0 10px 10px 0;
+      padding: 14px 18px;
+      margin-top: 12px;
+    }
+    .vc-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .vc-text  { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Аналитика · Диалоги</div>
+    <h1 class="slide-title">Контроль качества <span class="accent">каждого диалога</span></h1>
+    <p class="slide-subtitle">Оператор видит весь разговор клиента с AI, может перейти к связанному лиду одним кликом</p>
+
+    <div class="conv-layout">
+      <!-- Left: screenshots -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="ss-item">
+          <img src="../assets/screenshots/admin/15_conversations_list.png" alt="Список диалогов">
+          <div class="ss-label">Список диалогов</div>
+        </div>
+        <div class="ss-item">
+          <img src="../assets/screenshots/admin/16_conversation_detail.png" alt="Детали диалога">
+          <div class="ss-label">Детальный просмотр</div>
+        </div>
+      </div>
+
+      <!-- Right: features -->
+      <div>
+        <div class="feature-list">
+          <div class="feat-card">
+            <div class="feat-icon">🔍</div>
+            <div>
+              <div class="feat-title">Поиск и фильтрация</div>
+              <div class="feat-desc">Фильтр по языку (RU/UZ), времени, содержанию. Быстрый поиск по ключевым словам в тексте диалога.</div>
+            </div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">💬</div>
+            <div>
+              <div class="feat-title">Chat-bubble интерфейс</div>
+              <div class="feat-desc">Диалог отображается в виде привычных пузырьков — клиент слева, AI справа. Легко читается без технических знаний.</div>
+            </div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🚩</div>
+            <div>
+              <div class="feat-title">Флаги эскалации и жалоб</div>
+              <div class="feat-desc">Диалоги с сигналами жалоб (⚠️) и эскалациями (👥) отмечаются визуально — приоритизация без ручного чтения.</div>
+            </div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🔗</div>
+            <div>
+              <div class="feat-title">Связь Диалог → Лид</div>
+              <div class="feat-desc">Кнопка «💬 Открыть диалог» в карточке лида — оператор переходит к полной переписке, понимает намерение клиента перед звонком.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="value-callout">
+          <div class="vc-title">Ценность для оператора</div>
+          <div class="vc-text">Перед звонком клиенту менеджер видит: что именно интересовало клиента, какие вопросы задавал, что отвечал AI — разговор начинается продуктивно, без «расскажите о себе».</div>
+        </div>
+
+        <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="card-sm">
+            <div style="font-size:22px;font-weight:800;color:var(--text-primary);margin-bottom:2px;">12</div>
+            <div style="font-size:11px;color:var(--text-muted);">демо-диалогов в системе</div>
+          </div>
+          <div class="card-sm">
+            <div style="font-size:22px;font-weight:800;color:var(--text-primary);margin-bottom:2px;">2</div>
+            <div style="font-size:11px;color:var(--text-muted);">языка отображения</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

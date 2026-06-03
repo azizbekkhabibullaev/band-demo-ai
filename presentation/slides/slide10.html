@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>10 · Продуктовые инсайты</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .insights-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; }
+    .ss-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .ss-item { border-radius: 12px; overflow: hidden; border: 1px solid var(--border-mid); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .ss-item img { width: 100%; display: block; }
+    .ss-label { font-size: 10px; color: var(--text-muted); text-align: center; padding: 5px; background: var(--bg-card); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .insight-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md); padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .ic-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; display: flex; gap: 8px; align-items: center; }
+    .ic-body  { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+    .product-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .pb-label { font-size: 12px; color: var(--text-secondary); min-width: 100px; }
+    .pb-track { flex: 1; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+    .pb-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg,#1d4ed8,#3b82f6); }
+    .pb-count { font-size: 11px; font-weight: 700; color: var(--text-primary); min-width: 28px; text-align: right; }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Аналитика · Продуктовые инсайты</div>
+    <h1 class="slide-title">Что клиенты <span class="accent">хотят прямо сейчас</span></h1>
+    <p class="slide-subtitle">Топ продуктов по спросу, Quick Action аналитика, конверсионная воронка — всё из реальных диалогов</p>
+
+    <div class="insights-layout">
+      <!-- Left: screenshots -->
+      <div>
+        <div class="ss-row">
+          <div class="ss-item">
+            <img src="../assets/screenshots/admin/12_dashboard_kpi.png" alt="KPI">
+            <div class="ss-label">KPI-карточки</div>
+          </div>
+          <div class="ss-item">
+            <img src="../assets/screenshots/admin/14_top_products.png" alt="Top products">
+            <div class="ss-label">Топ продуктов</div>
+          </div>
+        </div>
+        <div class="ss-row">
+          <div class="ss-item">
+            <img src="../assets/screenshots/admin/13_lead_funnel.png" alt="Lead funnel">
+            <div class="ss-label">Воронка лидов</div>
+          </div>
+          <div class="ss-item">
+            <img src="../assets/screenshots/admin/20_conversion_funnel.png" alt="Conversion">
+            <div class="ss-label">Конверсия</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: analysis -->
+      <div>
+        <div class="section-label" style="margin-bottom:12px;">Демо-данные: распределение интересов</div>
+        <div class="product-bar"><div class="pb-label">🏠 Депозит/Вклад</div><div class="pb-track"><div class="pb-fill" style="width:85%"></div></div><div class="pb-count">38%</div></div>
+        <div class="product-bar"><div class="pb-label">🏡 Ипотека</div><div class="pb-track"><div class="pb-fill" style="width:68%"></div></div><div class="pb-count">29%</div></div>
+        <div class="product-bar"><div class="pb-label">💳 Кредит</div><div class="pb-track"><div class="pb-fill" style="width:50%"></div></div><div class="pb-count">21%</div></div>
+        <div class="product-bar"><div class="pb-label">💳 Карта</div><div class="pb-track"><div class="pb-fill" style="width:28%"></div></div><div class="pb-count">12%</div></div>
+
+        <div class="divider"></div>
+
+        <div class="insight-card">
+          <div class="ic-title">📊 Quick Action аналитика</div>
+          <div class="ic-body">258 кликов по быстрым кнопкам в системе. Самая кликаемая: <strong style="color:var(--text-primary);">«💬 Оставить заявку»</strong> (31 клик) — клиенты сами хотят конвертироваться.</div>
+        </div>
+
+        <div class="insight-card">
+          <div class="ic-title">🌐 Языковое распределение</div>
+          <div class="ic-body">~45% сессий на узбекском языке, ~55% на русском. Двуязычная поддержка охватывает всю аудиторию без исключений.</div>
+        </div>
+
+        <div class="insight-card">
+          <div class="ic-title">⏱️ Активность по часам</div>
+          <div class="ic-body">14-дневный тренд показывает рост с 8 до 32 диалогов в день. Пиковые дни — рабочие. Ночной трафик: ~20% от дневного, полностью обслуживается AI без операторов.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

@@ -24,5 +24,8 @@
   "dependencies": {
     "@bank-chatbot/widget": "file:apps/widget",
     "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.1.0"
   }
 }

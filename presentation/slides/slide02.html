@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>02 · Проблема</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .problem-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; flex: 1; }
+    .pain-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(248,113,113,0.12);
+      border-radius: var(--radius-lg);
+      padding: 22px 26px;
+      display: flex; gap: 16px; align-items: flex-start;
+      transition: border-color 0.2s;
+    }
+    .pain-card:hover { border-color: rgba(248,113,113,0.25); }
+    .pain-number {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: #f87171; flex-shrink: 0;
+    }
+    .pain-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .pain-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .stat-highlight {
+      background: rgba(248,113,113,0.06);
+      border: 1px solid rgba(248,113,113,0.1);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      text-align: center;
+    }
+    .stat-hl-value { font-size: 44px; font-weight: 900; color: #f87171; letter-spacing: -0.04em; }
+    .stat-hl-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .insight-box {
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+    }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Контекст · Проблема</div>
+    <h1 class="slide-title">Что <span class="accent">не работает</span> сегодня</h1>
+    <p class="slide-subtitle">Клиентский сервис банка сталкивается с ограничениями, которые напрямую влияют на доход и лояльность</p>
+
+    <div class="problem-grid">
+      <!-- Left: pain points -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="pain-card">
+          <div class="pain-number">1</div>
+          <div>
+            <div class="pain-title">Колл-центр перегружен рутиной</div>
+            <div class="pain-desc">70–80% входящих обращений — типовые вопросы: ставки по вкладам, условия ипотеки, разблокировка карт. Операторы тратят время на вопросы, которые можно автоматизировать.</div>
+          </div>
+        </div>
+        <div class="pain-card">
+          <div class="pain-number">2</div>
+          <div>
+            <div class="pain-title">Лиды теряются ночью и на выходных</div>
+            <div class="pain-desc">Клиент интересуется ипотекой в 22:00 — ни формы заявки, ни живого оператора. Он уходит к конкуренту. Нет захвата контакта, нет передачи в CRM.</div>
+          </div>
+        </div>
+        <div class="pain-card">
+          <div class="pain-number">3</div>
+          <div>
+            <div class="pain-title">Жалобы обнаруживаются слишком поздно</div>
+            <div class="pain-desc">Системные проблемы (сбой мобильного приложения, массовые блокировки карт) выявляются только через звонки в колл-центр, а не превентивно через анализ диалогов.</div>
+          </div>
+        </div>
+        <div class="pain-card">
+          <div class="pain-number">4</div>
+          <div>
+            <div class="pain-title">Нет данных о клиентских намерениях</div>
+            <div class="pain-desc">Менеджмент не знает: какой продукт интересует клиентов прямо сейчас, где возникают барьеры в клиентском пути, насколько эффективны консультации.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: impact stats -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="section-label">Влияние на бизнес</div>
+        <div class="stat-highlight">
+          <div class="stat-hl-value">8–12 мин</div>
+          <div class="stat-hl-label">Среднее время ожидания ответа оператора</div>
+        </div>
+        <div class="stat-highlight">
+          <div class="stat-hl-value">0%</div>
+          <div class="stat-hl-label">Автоматического захвата лидов в нерабочее время</div>
+        </div>
+        <div class="stat-highlight">
+          <div class="stat-hl-value">72ч+</div>
+          <div class="stat-hl-label">Задержка обнаружения системной проблемы</div>
+        </div>
+        <div class="insight-box">
+          <div class="section-label" style="margin-bottom:8px;">Главный вопрос</div>
+          <div class="big-quote" style="font-size:16px;">"Как банк может обслуживать тысячи клиентов одновременно, 24/7, на двух языках — без пропорционального роста штата?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>

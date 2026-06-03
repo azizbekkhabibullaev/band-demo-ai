@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>09 · Жалобы</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/theme.css">
+  <style>
+    body { width: 1440px; height: 900px; overflow: hidden; }
+    .compl-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 36px; flex: 1; }
+    .ss-item { border-radius: 12px; overflow: hidden; border: 1px solid var(--border-mid); box-shadow: 0 8px 24px rgba(0,0,0,0.4); margin-bottom: 14px; }
+    .ss-item img { width: 100%; display: block; }
+    .ss-label { font-size: 10px; color: var(--text-muted); text-align: center; padding: 5px; background: var(--bg-card); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .cat-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .cat-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .cat-bar-track { flex: 1; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+    .cat-bar-fill { height: 100%; border-radius: 3px; }
+    .cat-label { font-size: 12px; color: var(--text-secondary); min-width: 120px; }
+    .cat-count { font-size: 12px; font-weight: 700; color: var(--text-primary); min-width: 30px; text-align: right; }
+    .prio-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .prio-high   { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+    .prio-medium { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+    .prio-low    { background: rgba(52,211,153,0.10); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+    .insight-box {
+      background: rgba(248,113,113,0.06);
+      border: 1px solid rgba(248,113,113,0.12);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="slide">
+  <div class="slide-content">
+    <div class="eyebrow">Аналитика · Жалобы</div>
+    <h1 class="slide-title">Превентивный <span class="accent">мониторинг проблем</span></h1>
+    <p class="slide-subtitle">AI классифицирует каждую жалобу в реальном времени — проблема видна до того, как нарастёт</p>
+
+    <div class="compl-layout">
+      <!-- Left: screenshot -->
+      <div>
+        <div class="ss-item">
+          <img src="../assets/screenshots/admin/19_complaints_page.png" alt="Жалобы">
+          <div class="ss-label">Страница жалоб — admin panel</div>
+        </div>
+        <div class="callout">
+          <strong>Автоматическая эскалация:</strong> при резком росте жалоб одной категории система сигнализирует администратору — вы узнаёте о сбое раньше, чем он становится массовым.
+        </div>
+      </div>
+
+      <!-- Right: categories -->
+      <div>
+        <div class="section-label" style="margin-bottom:14px;">8 категорий жалоб</div>
+
+        <div class="cat-row">
+          <div class="cat-icon" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);">📱</div>
+          <div class="cat-label">Мобильное приложение</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#f87171;"></div></div>
+          <div class="cat-count">8</div>
+          <span class="prio-badge prio-high">Высокий</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);">💳</div>
+          <div class="cat-label">Карта</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:75%;background:#f87171;"></div></div>
+          <div class="cat-count">6</div>
+          <span class="prio-badge prio-high">Высокий</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);">📲</div>
+          <div class="cat-label">OTP/SMS</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:62%;background:#f87171;"></div></div>
+          <div class="cat-count">5</div>
+          <span class="prio-badge prio-high">Высокий</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);">💸</div>
+          <div class="cat-label">Переводы</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:50%;background:#f87171;"></div></div>
+          <div class="cat-count">4</div>
+          <span class="prio-badge prio-high">Высокий</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);">🏢</div>
+          <div class="cat-label">Отделение</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:50%;background:#fbbf24;"></div></div>
+          <div class="cat-count">4</div>
+          <span class="prio-badge prio-medium">Средний</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);">📋</div>
+          <div class="cat-label">Кредит</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:37%;background:#fbbf24;"></div></div>
+          <div class="cat-count">3</div>
+          <span class="prio-badge prio-medium">Средний</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);">🤝</div>
+          <div class="cat-label">Качество сервиса</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:37%;background:#34d399;"></div></div>
+          <div class="cat-count">3</div>
+          <span class="prio-badge prio-low">Низкий</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);">💰</div>
+          <div class="cat-label">Депозит</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:25%;background:#34d399;"></div></div>
+          <div class="cat-count">2</div>
+          <span class="prio-badge prio-low">Низкий</span>
+        </div>
+
+        <div class="insight-box" style="margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;color:#f87171;margin-bottom:4px;">⚡ Реальная ценность</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;">Сбой мобильного приложения обнаруживается не через 72 часа звонков в колл-центр, а через <strong style="color:var(--text-primary);">30 минут</strong> после всплеска жалоб в диалогах.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bg"></div>
+</div>
+</body>
+</html>
