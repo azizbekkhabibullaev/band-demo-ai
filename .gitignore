@@ -32,3 +32,4 @@ coverage/
 # Claude Code local tooling
 .claude/
 .vercel
+uploads/

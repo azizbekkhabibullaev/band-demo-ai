@@ -174,6 +174,91 @@ const SAMPLE_CALLS = [
     is_complaint:  false,
     complaint_notes: '',
   },
+
+  // ── Uzbek test cases ── (language='uz', normalized transcript) ──────────────
+
+  {
+    filename:         '06_uz_kredit_sorov.wav',
+    duration_seconds: 215,
+    language:         'uz',
+    transcript: `Operator: Assalomu alaykum. Ipoteka Bank, sizga qanday yordam bera olaman?
+Mijoz: Salom. Men kredit olmoqchi edim. Avtokredit bo'yicha ma'lumot olsam bo'ladimi?
+Operator: Albatta. Qaysi avtomobil uchun kredit olmoqchisiz?
+Mijoz: Nexia 3 olmoqchiman. Narxi taxminan 80 million so'm.
+Operator: Juda yaxshi. Bizda boshlang'ich to'lov 20 foizdan boshlanadi. 80 millionning 20 foizi — 16 million so'm.
+Mijoz: Tushunarli. Foiz stavkasi qancha?
+Operator: Yiliga 18 foiz. 5 yilga olinsa, oylik to'lov taxminan 1.8 million so'm bo'ladi.
+Mijoz: Hujjatlar kerak bo'ladimi?
+Operator: Ha. Pasport, 6 oylik daromad ma'lumoti va avtomobil oldi-sotdi shartnomasi.
+Mijoz: Mayli. Ertaga filialga kelishim mumkinmi?
+Operator: Albatta, istalgan filialimizga tashrif buyurishingiz mumkin. Murojaat raqamingiz: 2024-KR-1892.`,
+    summary:       'Клиент интересуется автокредитом на Nexia 3 (80 млн сум). Обсудили условия: первоначальный взнос 20% (16 млн), ставка 18%, срок 5 лет, ежемесячный платёж ~1.8 млн. Клиент планирует прийти в филиал завтра. Высокая вероятность конверсии.',
+    sentiment:     'positive',
+    sentiment_score: 0.84,
+    category:      'Автокредиты',
+    subcategory:   'Nexia 3 / Avtokredit 18%',
+    priority:      'high',
+    topics:        ['avtokredit', 'Nexia 3', 'boshlang\'ich to\'lov', 'filial tashrifi'],
+    is_lead:       true,
+    lead_score:    91,
+    lead_interest: 'Автокредиты',
+    is_complaint:  false,
+    complaint_notes: '',
+  },
+  {
+    filename:         '07_uz_omonat_sorov.wav',
+    duration_seconds: 178,
+    language:         'uz',
+    transcript: `Operator: Assalomu alaykum! Ipoteka Bank.
+Mijoz: Alaykum assalom. Omonat qo'ymoqchi edim. Eng yuqori foizli omonat qaysi?
+Operator: Bizda "Maksimal daromad" omonati bor — yiliga 19.5 foiz, 12 oyga.
+Mijoz: Minimal summa qancha?
+Operator: Minimal 1 million so'mdan. Siz qancha qo'ymoqchisiz?
+Mijoz: 15 million so'm bor. Foizlar oyma-oy to'lanadimi?
+Operator: Ha, oyiga bir marta hisobingizga o'tkaziladi. Yoki kapitallashtirish ham tanlasa bo'ladi — bu holda yillik effektiv stavka 21.4 foizgacha yetadi.
+Mijoz: Kapitallashtirish qiziq. Qanday qilib rasmiylashtiraman?
+Operator: Istalgan filialimizga pasportingiz bilan keling yoki ilovamiz orqali online rasmiylashtiring.
+Mijoz: Rahmat, tushundim. Ko'rib chiqaman.`,
+    summary:       'Клиент из Узбекистана интересуется вкладом с высокой процентной ставкой. Рассмотрел "Максимальный доход" — 19.5% годовых, сумма 15 млн сум. Заинтересован в капитализации (21.4% эффективная ставка). Клиент обдумывает решение, вероятность конверсии средняя.',
+    sentiment:     'neutral',
+    sentiment_score: 0.70,
+    category:      'Вклады',
+    subcategory:   "Maksimal daromad omonati / 19.5%",
+    priority:      'medium',
+    topics:        ['omonat', 'foiz stavkasi', 'kapitalizatsiya', 'Maksimal daromad'],
+    is_lead:       true,
+    lead_score:    74,
+    lead_interest: 'Вклады',
+    is_complaint:  false,
+    complaint_notes: '',
+  },
+  {
+    filename:         '08_uz_ilova_shikoyat.wav',
+    duration_seconds: 264,
+    language:         'uz',
+    transcript: `Operator: Assalomu alaykum, Ipoteka Bank.
+Mijoz: Salom. Men juda xafa bo'ldim. Ilovangiz uch kundan beri ishlamayapti!
+Operator: Uzr so'raymiz. Nima muammo bo'lyapti?
+Mijoz: Login va parolni kiritaman — ilova yuklash ekranida qotib qoladi. So'ngra yopiladi. Pullarimga kira olmayapman!
+Operator: Telefon turingiz va iOS versiyasi nima?
+Mijoz: iPhone 14, iOS 17.4. Kecha yangiladim — undan keyin ham ishlamayapti.
+Operator: Tushundim. Bu muammo haqida texnik bo'limga ma'lum qilingan. Ilovani o'chib qayta o'rnating.
+Mijoz: O'chirib qayta o'rnatdim — yordam bermadi!
+Operator: Kechirasiz. Sizning murojaat raqamingiz: TK-2024-0391. Texnik mutaxassis 24 soat ichida qo'ng'iroq qiladi.
+Mijoz: Yaxshi, kutaman. Lekin tezroq hal qiling iltimos.`,
+    summary:       'Клиент жалуется на критическую неисправность мобильного приложения — зависает на экране загрузки после обновления iOS 17.4 (iPhone 14). Приложение не запускается три дня. Переустановка не помогла. Зарегистрирован тикет TK-2024-0391, техник позвонит в течение 24 часов.',
+    sentiment:     'negative',
+    sentiment_score: 0.14,
+    category:      'Мобильное приложение',
+    subcategory:   'Ilova ishlamayapti / iOS 17.4 yangilanishidan keyin',
+    priority:      'critical',
+    topics:        ['ilova', 'iOS 17', 'login muammosi', 'shikoyat', 'texnik xato'],
+    is_lead:       false,
+    lead_score:    0,
+    lead_interest: '',
+    is_complaint:  true,
+    complaint_notes: "Ilova iOS 17.4 yangilanishidan keyin ishlamayapti. iPhone 14. Qayta o'rnatish yordam bermadi. 3 kun muammo davom etmoqda.",
+  },
 ];
 
 // ── Generate silent WAV helper ─────────────────────────────────────────────────
@@ -213,9 +298,14 @@ function makeSilentWav(durationSecs = 1, sampleRate = 8000) {
 const pool = new pg.Pool({ connectionString: DATABASE_URL });
 
 try {
-  // Get tenant
-  const { rows: tenants } = await pool.query('SELECT id FROM tenants LIMIT 1');
-  const tenantId = tenants[0]?.id ?? 'ipoteka-bank';
+  // Get tenant — prefer ipoteka-bank, fall back to first available
+  const { rows: preferred } = await pool.query(
+    `SELECT id FROM tenants WHERE id = 'ipoteka-bank' LIMIT 1`
+  );
+  const { rows: fallback } = preferred.length === 0
+    ? await pool.query(`SELECT id FROM tenants LIMIT 1`)
+    : { rows: [] };
+  const tenantId = preferred[0]?.id ?? fallback[0]?.id ?? 'ipoteka-bank';
   console.log(`Using tenant: ${tenantId}`);
 
   // Create qa-audio dir and sample WAV files

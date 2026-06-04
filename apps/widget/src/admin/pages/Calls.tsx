@@ -75,14 +75,40 @@ function KpiBox({ label, value, sub, accent }: {
   );
 }
 
+// ─── Language options ─────────────────────────────────────────────────────────
+
+type UploadLanguage = 'uz' | 'ru' | 'auto';
+
+const LANG_OPTIONS: { value: UploadLanguage; flag: string; label: string; hint: string }[] = [
+  {
+    value: 'uz',
+    flag:  '🇺🇿',
+    label: "O'zbekcha",
+    hint:  'Whisper majburan o'zbek tilida ishlaydi + matn normallanadi',
+  },
+  {
+    value: 'ru',
+    flag:  '🇷🇺',
+    label: 'Русский',
+    hint:  'Whisper majburan rus tilida ishlaydi',
+  },
+  {
+    value: 'auto',
+    flag:  '🔍',
+    label: 'Авто-определение',
+    hint:  'Whisper tilni o'zi aniqlaydi (faqat rus tili uchun yaxshi)',
+  },
+];
+
 // ─── Upload drop zone ─────────────────────────────────────────────────────────
 
 function UploadZone({ onUploaded }: { onUploaded: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [dragging, setDragging]     = useState(false);
+  const [uploading, setUploading]   = useState(false);
+  const [language, setLanguage]     = useState<UploadLanguage>('auto');
   const [uploadResult, setUploadResult] = useState<{ count: number; names: string[] } | null>(null);
-  const [uploadError, setUploadError] = useState('');
+  const [uploadError, setUploadError]   = useState('');
 
   const ACCEPT = '.mp3,.wav,.m4a,.webm,.mp4,.ogg,.flac';
 
@@ -93,7 +119,7 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
     setUploadError('');
     setUploadResult(null);
     try {
-      const res = await uploadCalls(arr);
+      const res = await uploadCalls(arr, language);
       setUploadResult({ count: res.count, names: res.uploaded.map(u => u.filename) });
       onUploaded();
     } catch (e) {
@@ -103,18 +129,78 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
     }
   }
 
+  const selectedLang = LANG_OPTIONS.find(l => l.value === language)!;
+
   return (
     <div className="bg-[#161b27] rounded-xl border border-white/[0.07] p-5">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-3">
         <span className="text-lg">📤</span>
         <h3 className="text-[13px] font-semibold text-white">Загрузить звонок</h3>
         <span className="ml-auto text-[10px] text-white/25">MP3 · WAV · M4A · до 50 МБ</span>
       </div>
 
+      {/* ── Language selector — critical for Uzbek quality ── */}
+      <div className="mb-3">
+        <div className="text-[10px] text-white/40 uppercase tracking-wide mb-1.5 font-medium">
+          Язык записи
+          <span className="ml-1.5 text-orange-400/70 normal-case font-normal">
+            ⚠️ Выберите правильно — влияет на качество транскрипции
+          </span>
+        </div>
+        <div className="flex gap-1.5">
+          {LANG_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setLanguage(opt.value)}
+              className={[
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-medium transition-all flex-1 justify-center',
+                language === opt.value
+                  ? opt.value === 'uz'
+                    ? 'bg-emerald-600/30 border border-emerald-500/50 text-emerald-300'
+                    : opt.value === 'ru'
+                      ? 'bg-blue-600/30 border border-blue-500/50 text-blue-300'
+                      : 'bg-white/10 border border-white/20 text-white'
+                  : 'bg-white/[0.03] border border-white/[0.07] text-white/40 hover:text-white/70 hover:bg-white/[0.06]',
+              ].join(' ')}
+            >
+              <span>{opt.flag}</span>
+              <span>{opt.label}</span>
+            </button>
+          ))}
+        </div>
+        {/* Hint for selected language */}
+        <p className="text-[10px] text-white/25 mt-1.5 leading-relaxed">
+          {selectedLang.hint}
+        </p>
+        {/* Special Uzbek warning */}
+        {language === 'uz' && (
+          <div className="mt-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+            <p className="text-[11px] text-emerald-300 font-medium">
+              ✓ O'zbek tili tanlandi
+            </p>
+            <p className="text-[10px] text-white/40 mt-0.5">
+              Whisper language=uz + GPT normalizatsiya qadami yoqilgan.
+              Transkript adabiy o'zbek tilida saqlanadi.
+            </p>
+          </div>
+        )}
+        {language === 'auto' && (
+          <div className="mt-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+            <p className="text-[11px] text-orange-300 font-medium">
+              ⚠️ Авто-определение не рекомендуется для узбекских звонков
+            </p>
+            <p className="text-[10px] text-white/40 mt-0.5">
+              Whisper часто транскрибирует узбекский как фонетическую латиницу.
+              Выберите 🇺🇿 O'zbekcha для правильного результата.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Drop zone */}
       <div
         className={[
-          'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200',
+          'border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200',
           dragging
             ? 'border-blue-500 bg-blue-500/10'
             : 'border-white/[0.12] hover:border-white/25 hover:bg-white/[0.02]',
@@ -132,16 +218,24 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
         {uploading ? (
           <div className="space-y-2">
             <div className="text-3xl animate-bounce">⏳</div>
-            <p className="text-[13px] text-white/60">Транскрибируем и анализируем…</p>
+            <p className="text-[13px] text-white/60">
+              {language === 'uz'
+                ? "Whisper → O'zbek normalizatsiyasi → GPT tahlili…"
+                : 'Транскрибируем и анализируем…'}
+            </p>
             <p className="text-[11px] text-white/30">Это может занять 30–90 секунд</p>
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="text-3xl">🎙️</div>
+            <div className="text-3xl">{selectedLang.flag}</div>
             <p className="text-[13px] font-medium text-white/70">
-              Перетащите файлы сюда или <span className="text-blue-400">выберите файл</span>
+              Перетащите файлы сюда или{' '}
+              <span className="text-blue-400">выберите файл</span>
             </p>
-            <p className="text-[11px] text-white/30">Поддерживается несколько файлов одновременно</p>
+            <p className="text-[11px] text-white/30">
+              Язык: <span className="text-white/50">{selectedLang.flag} {selectedLang.label}</span>
+              {' · '}Несколько файлов поддерживается
+            </p>
           </div>
         )}
       </div>

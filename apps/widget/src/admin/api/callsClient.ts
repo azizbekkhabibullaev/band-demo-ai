@@ -98,10 +98,18 @@ export interface UploadedCall {
 
 // ─── API functions ────────────────────────────────────────────────────────────
 
-export async function uploadCalls(files: File[]): Promise<{ uploaded: UploadedCall[]; count: number }> {
+/**
+ * Upload audio files for processing.
+ * language: 'uz' | 'ru' | 'auto'
+ *   IMPORTANT: always pass 'uz' for Uzbek audio — Whisper auto-detect is unreliable.
+ */
+export async function uploadCalls(
+  files: File[],
+  language: 'uz' | 'ru' | 'auto' = 'auto',
+): Promise<{ uploaded: UploadedCall[]; count: number }> {
   const form = new FormData();
   for (const file of files) form.append('file', file);
-  return request('/api/admin/calls/upload', {
+  return request(`/api/admin/calls/upload?language=${language}`, {
     method: 'POST',
     body: form,
     // Don't set content-type — browser sets it with boundary automatically

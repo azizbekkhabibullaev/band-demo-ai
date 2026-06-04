@@ -1,14 +1,15 @@
 /**
  * VOC Call Analysis Engine
  *
- * Takes a call transcript and produces structured business intelligence:
- *   - AI summary (3-4 sentences, Russian)
- *   - Sentiment: positive / neutral / negative
- *   - Main category + subcategory
- *   - Priority: low / medium / high / critical
- *   - Lead detection (is_lead + score + interest)
- *   - Complaint detection
- *   - Topics array
+ * Pipeline:
+ *   transcript
+ *     → [normalizeUzbek]  (only when language='uz')
+ *     → analyzeTranscript (GPT JSON classification)
+ *
+ * Uzbek normalization:
+ *   Whisper outputs raw phonetic text for Uzbek even with language='uz'.
+ *   A dedicated GPT pass rewrites it into proper literary Uzbek before
+ *   classification, so the stored transcript is human-readable.
  */
 
 export type Sentiment = 'positive' | 'neutral' | 'negative';
@@ -19,18 +20,116 @@ export interface CallAnalysis {
   sentiment: Sentiment;
   sentimentScore: number;     // 0.0 – 1.0
   category: string;           // Вклады / Кредиты / Ипотека / ...
-  subcategory: string;        // AI-generated, e.g. "Вклад 20%"
+  subcategory: string;        // AI-generated, e.g. "Vklad 20%"
   priority: Priority;
   topics: string[];
   isLead: boolean;
   leadScore: number;          // 0 – 100
-  leadInterest: string;       // e.g. "Автокредит"
+  leadInterest: string;
   isComplaint: boolean;
-  complaintNotes: string;     // brief description if complaint
+  complaintNotes: string;
   language: string;
 }
 
-const SYSTEM_PROMPT = `Ты — аналитик контакт-центра банка. Тебе дают транскрипт звонка.
+// ─── Uzbek normalizer ─────────────────────────────────────────────────────────
+
+/**
+ * Post-process a raw Whisper Uzbek transcript into proper literary Uzbek.
+ *
+ * Whisper with language='uz' produces mostly correct words but with:
+ *   - missing punctuation and sentence breaks
+ *   - inconsistent apostrophes (o'zbek vs ozbek)
+ *   - mixed register
+ *
+ * This step fixes all of the above while keeping the original meaning intact.
+ */
+export async function normalizeUzbek(
+  rawTranscript: string,
+  apiKey: string,
+  model = 'gpt-4o-mini',
+): Promise<string> {
+  if (!rawTranscript || rawTranscript.trim().length < 10) return rawTranscript;
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: 'system',
+          content: `Siz bank qo'ng'iroqlari transkriptlarini tahrirlovchi mutaxasssissiz.
+Sizga telefon suhbatining xom matni beriladi — u avtomatik nutqni tanish tizimi (Whisper) tomonidan yaratilgan.
+
+Vazifangiz:
+1. Matnni to'g'ri adabiy o'zbek tiliga o'tkazing (lotin yozuvida)
+2. Gaplar orasiga to'g'ri tinish belgilari qo'ying (nuqta, vergul, savol belgisi)
+3. So'zlarni to'g'ri yozing: o'zbek → o'zbek, ko'proq → ko'proq, bo'ladi → bo'ladi
+4. Har bir yangi gapirayotgan kishi uchun yangi qator boshlang
+5. Mazmunni o'ZGARTIRMANG — faqat imlo va tinish belgilarini tuzating
+6. Faqat tahrirлangan matnni qaytaring, hech qanday izoh yozmang`,
+        },
+        {
+          role: 'user',
+          content: `Xom transkript:\n\n${rawTranscript.slice(0, 5000)}`,
+        },
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+    }),
+  });
+
+  if (!res.ok) {
+    // Non-critical: return raw transcript if normalization fails
+    return rawTranscript;
+  }
+
+  const data = await res.json() as {
+    choices: [{ message: { content: string } }];
+  };
+
+  const normalized = data.choices[0]?.message?.content?.trim() ?? '';
+  return normalized.length > 20 ? normalized : rawTranscript;
+}
+
+// ─── Classification prompt ────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `Siz bank qo'ng'iroqlari tahlilchisisiz. Sizga telefon suhbatining transkribi beriladi.
+Faqat JSON-obyekt qaytaring, hech qanday tushuntirish bermang.
+
+JSON sxemasi:
+{
+  "summary": "2-4 jumlali qisqacha xulosa RUSCHA (Rus tilida)",
+  "sentiment": "positive" | "neutral" | "negative",
+  "sentimentScore": 0.0 dan 1.0 gacha son (1.0 = maksimal ijobiy),
+  "category": "Вклады" | "Кредиты" | "Автокредиты" | "Ипотека" | "Карты" | "Мобильное приложение" | "Филиалы" | "Поддержка" | "Брокерские услуги" | "Жалобы" | "Другое",
+  "subcategory": "o'zbek yoki rus tilida aniq pastki kategoriya",
+  "priority": "low" | "medium" | "high" | "critical",
+  "topics": ["mavzu1", "mavzu2", "mavzu3"],
+  "isLead": true/false,
+  "leadScore": 0-100 butun son,
+  "leadInterest": "mahsulot nomi (isLead=true bo'lsa), aks holda bo'sh qator",
+  "isComplaint": true/false,
+  "complaintNotes": "shikoyat tavsifi (isComplaint=true bo'lsa), aks holda bo'sh qator",
+  "language": "uz"
+}
+
+Muhim qoidalar:
+- summary DOIM ruscha yozilsin (boshqaruv rus tilida ishlaydi)
+- category doim ruscha bo'lsin
+- subcategory va topics o'zbek yoki rus tilida bo'lishi mumkin
+- critical: firibgarlik, karta bloklash, mablag' yo'qolishi
+- high: xizmat ko'rsatish shikoyati, texnik muammo
+- medium: mahsulot bo'yicha maslahat, qayta qo'ng'iroq so'rovi
+- low: umumiy savol
+- leadScore 90-100: mijoz to'g'ridan-to'g'ri mahsulot ochmoqchi
+- leadScore 70-89: aniq savol bilan qiziqish bildirgan
+- FAQAT JSON qaytaring, markdown yo'q`;
+
+const SYSTEM_PROMPT_RU = `Ты — аналитик контакт-центра банка. Тебе дают транскрипт звонка.
 Верни строго JSON-объект без каких-либо объяснений.
 
 Схема JSON:
@@ -39,11 +138,11 @@ const SYSTEM_PROMPT = `Ты — аналитик контакт-центра б�
   "sentiment": "positive" | "neutral" | "negative",
   "sentimentScore": число от 0.0 до 1.0 (1.0 = максимально позитивный),
   "category": одна из: "Вклады" | "Кредиты" | "Автокредиты" | "Ипотека" | "Карты" | "Мобильное приложение" | "Филиалы" | "Поддержка" | "Брокерские услуги" | "Жалобы" | "Другое",
-  "subcategory": "конкретная подкатегория на русском, генерируй сам",
+  "subcategory": "конкретная подкатегория, генерируй сам",
   "priority": "low" | "medium" | "high" | "critical",
   "topics": ["тема1", "тема2", "тема3"],
   "isLead": true/false,
-  "leadScore": целое число 0-100 (насколько горячий лид),
+  "leadScore": целое число 0-100,
   "leadInterest": "название продукта если isLead=true, иначе пустая строка",
   "isComplaint": true/false,
   "complaintNotes": "краткое описание жалобы если isComplaint=true, иначе пустая строка",
@@ -64,18 +163,27 @@ const SYSTEM_PROMPT = `Ты — аналитик контакт-центра б�
 
 Отвечай ТОЛЬКО JSON, без markdown, без объяснений.`;
 
+// ─── Main analysis function ───────────────────────────────────────────────────
+
 /**
  * Analyze a call transcript using GPT.
- * Returns structured CallAnalysis or throws on API error.
+ * Automatically selects the prompt language based on detected language.
  */
 export async function analyzeTranscript(
   transcript: string,
   apiKey: string,
   model = 'gpt-4o-mini',
+  language?: string,
 ): Promise<CallAnalysis> {
   if (!transcript || transcript.trim().length < 10) {
-    return emptyAnalysis(transcript);
+    return emptyAnalysis(transcript, language);
   }
+
+  // Use Uzbek-aware prompt when language is Uzbek
+  const systemPrompt = language === 'uz' ? SYSTEM_PROMPT : SYSTEM_PROMPT_RU;
+  const userContent   = language === 'uz'
+    ? `Qo'ng'iroq transkribi:\n\n${transcript.slice(0, 6000)}`
+    : `Транскрипт звонка:\n\n${transcript.slice(0, 6000)}`;
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -86,14 +194,11 @@ export async function analyzeTranscript(
     body: JSON.stringify({
       model,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Транскрипт звонка:\n\n${transcript.slice(0, 6000)}`,
-        },
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userContent },
       ],
       temperature: 0.1,
-      max_tokens: 600,
+      max_tokens: 700,
       response_format: { type: 'json_object' },
     }),
   });
@@ -127,15 +232,17 @@ export async function analyzeTranscript(
     leadInterest:   parsed.leadInterest   ?? '',
     isComplaint:    parsed.isComplaint    ?? false,
     complaintNotes: parsed.complaintNotes ?? '',
-    language:       parsed.language       ?? 'ru',
+    language:       language ?? (parsed.language ?? 'ru'),
   };
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function emptyAnalysis(transcript: string): CallAnalysis {
+function emptyAnalysis(transcript: string, language?: string): CallAnalysis {
   return {
-    summary:        transcript.length < 10 ? 'Транскрипт пустой или слишком короткий для анализа.' : 'Анализ недоступен.',
+    summary:        transcript.length < 10
+      ? 'Транскрипт пустой или слишком короткий для анализа.'
+      : 'Анализ недоступен.',
     sentiment:      'neutral',
     sentimentScore: 0.5,
     category:       'Другое',
@@ -147,7 +254,7 @@ function emptyAnalysis(transcript: string): CallAnalysis {
     leadInterest:   '',
     isComplaint:    false,
     complaintNotes: '',
-    language:       'ru',
+    language:       language ?? 'ru',
   };
 }
 
