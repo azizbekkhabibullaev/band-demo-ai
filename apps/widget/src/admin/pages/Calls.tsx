@@ -84,19 +84,19 @@ const LANG_OPTIONS: { value: UploadLanguage; flag: string; label: string; hint: 
     value: 'uz',
     flag:  '🇺🇿',
     label: "O'zbekcha",
-    hint:  "Whisper majburan o'zbek tilida ishlaydi + matn normallanadi",
+    hint:  "Whisper avtomatik aniqlab, o'zbek normallovchi ishlatiladi",
   },
   {
     value: 'ru',
     flag:  '🇷🇺',
     label: 'Русский',
-    hint:  'Whisper majburan rus tilida ishlaydi',
+    hint:  'Whisper принудительно переводит на русский язык',
   },
   {
     value: 'auto',
     flag:  '🔍',
     label: 'Авто-определение',
-    hint:  "Whisper tilni o'zi aniqlaydi (faqat rus tili uchun yaxshi)",
+    hint:  'Whisper автоматически определяет язык',
   },
 ];
 

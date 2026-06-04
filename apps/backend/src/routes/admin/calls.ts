@@ -2,7 +2,7 @@
  * VOC (Voice of Customer) — Call Analytics API
  *
  * POST   /api/admin/calls/upload       — upload audio files
- *          ?language=uz|ru|auto         — explicit language (REQUIRED for Uzbek)
+ *          ?language=uz|ru|auto         — language hint (uz uses auto-detect, see below)
  * GET    /api/admin/calls              — list with filters
  * GET    /api/admin/calls/analytics    — KPI stats
  * GET    /api/admin/calls/trends       — period-over-period trends
@@ -11,11 +11,12 @@
  * DELETE /api/admin/calls/:id          — delete record
  *
  * PIPELINE per uploaded file:
- *   1. Whisper STT  (language forced when provided — critical for Uzbek)
- *   2. Uzbek normalizer  (GPT rewrite — only when language='uz')
+ *   1. Whisper STT  (only officially-supported language codes forwarded to API;
+ *                    'uz' uses auto-detection — 'uz' is NOT a valid Whisper param)
+ *   2. Uzbek normalizer  (GPT rewrite — when Whisper detected OR hint is 'uz')
  *   3. GPT classification  (language-aware prompt)
  *   4. Auto-lead creation  (if leadScore ≥ 60)
- *   5. DB persist
+ *   5. DB persist (including confidence + detected_language from Whisper)
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
@@ -62,10 +63,12 @@ function validateExt(name: string): boolean {
 
 /**
  * Full processing pipeline for a single call.
+ *
  * hintLanguage = 'uz' | 'ru' | 'auto' | undefined
- *   - 'uz'   → force Whisper to Uzbek, then run Uzbek normalizer
- *   - 'ru'   → force Whisper to Russian
- *   - 'auto' / undefined → let Whisper auto-detect (acceptable for Russian)
+ *   - 'uz'  → transcribeAudio uses auto-detect ('uz' is NOT a valid Whisper param),
+ *              Uzbek normalizer runs if Whisper confirms or hint='uz'
+ *   - 'ru'  → forwarded to Whisper (officially supported)
+ *   - 'auto' / undefined → Whisper auto-detect
  */
 async function processCall(
   callId: string,
@@ -85,17 +88,28 @@ async function processCall(
     );
 
     // ── Step 1: Speech-to-Text ───────────────────────────────────────────────
-    // Always pass explicit language when known — Uzbek auto-detect is unreliable
+    // transcribeAudio internally validates the language code against Whisper's
+    // supported list. 'uz' is silently converted to auto-detect inside that fn.
     const transcription = await transcribeAudio(buffer, filename, apiKey, hintLanguage);
-    const detectedLang = hintLanguage && hintLanguage !== 'auto'
-      ? hintLanguage
-      : transcription.language;
 
-    // ── Step 2: Uzbek normalization (uz only) ────────────────────────────────
-    // Whisper's raw Uzbek output lacks punctuation and proper orthography.
-    // A dedicated GPT pass rewrites it into readable literary Uzbek.
+    // Use Whisper's detected ISO code as the primary language signal.
+    // The hint is used as a fallback (e.g. if Whisper returns empty language).
+    const detectedLang = transcription.language;  // ISO 639-1, mapped from Whisper name
+
+    console.info(
+      `[processCall] id=${callId} hint=${hintLanguage ?? 'none'} ` +
+      `detected="${transcription.detectedName}" iso="${detectedLang}" ` +
+      `confidence=${transcription.confidence.toFixed(2)}`,
+    );
+
+    // ── Step 2: Uzbek normalization ──────────────────────────────────────────
+    // Whisper's raw Uzbek output lacks punctuation and proper apostrophes.
+    // Run the GPT normalizer if:
+    //   (a) Whisper detected the language as Uzbek, OR
+    //   (b) the user explicitly hinted 'uz' (trust the operator over auto-detect)
+    const isUzbek = detectedLang === 'uz' || hintLanguage === 'uz';
     let finalTranscript = transcription.text;
-    if (detectedLang === 'uz' && finalTranscript.length > 10) {
+    if (isUzbek && finalTranscript.length > 10) {
       finalTranscript = await normalizeUzbek(finalTranscript, apiKey);
     }
 
@@ -129,12 +143,13 @@ async function processCall(
          priority = $9, topics = $10::jsonb,
          is_lead = $11, lead_score = $12, lead_interest = $13, lead_id = $14,
          is_complaint = $15, complaint_notes = $16,
+         confidence = $17, detected_language = $18,
          status = 'completed', updated_at = now()
-       WHERE id = $17`,
+       WHERE id = $19`,
       [
         transcription.durationSeconds,
         detectedLang,
-        finalTranscript,           // normalized if uz, raw otherwise
+        finalTranscript,                  // normalized if Uzbek, raw otherwise
         analysis.summary,
         analysis.sentiment,
         analysis.sentimentScore,
@@ -148,6 +163,8 @@ async function processCall(
         leadId,
         analysis.isComplaint,
         analysis.complaintNotes,
+        transcription.confidence,         // Whisper segment avg_logprob → 0.0–1.0
+        transcription.detectedName,       // raw name: "uzbek", "russian", …
         callId,
       ],
     );
@@ -173,9 +190,10 @@ export async function callsRoute(app: FastifyInstance): Promise<void> {
   // ──────────────────────────────────────────────────────────────────────────
   // POST /api/admin/calls/upload?language=uz|ru|auto
   //
-  // language query param is the critical fix for Uzbek quality:
-  //   ?language=uz   → force Whisper to Uzbek + run Uzbek normalizer
-  //   ?language=ru   → force Whisper to Russian
+  // language query param is a hint:
+  //   ?language=uz   → auto-detect ('uz' is NOT a valid Whisper code) +
+  //                    run Uzbek normalizer if detected/hinted as Uzbek
+  //   ?language=ru   → forward 'ru' to Whisper (officially supported)
   //   ?language=auto → Whisper auto-detect (default)
   // ──────────────────────────────────────────────────────────────────────────
   app.post('/api/admin/calls/upload', async (req, reply) => {
