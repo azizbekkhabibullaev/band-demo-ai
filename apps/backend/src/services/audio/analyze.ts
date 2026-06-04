@@ -61,20 +61,26 @@ export async function normalizeUzbek(
       messages: [
         {
           role: 'system',
-          content: `Siz bank qo'ng'iroqlari transkriptlarini tahrirlovchi mutaxasssissiz.
-Sizga telefon suhbatining xom matni beriladi — u avtomatik nutqni tanish tizimi (Whisper) tomonidan yaratilgan.
+          content: `Siz o'zbek bank qo'ng'iroqlari transkriptlarini tahrirlovchi mutaxassississiz.
+
+Muhim: Kiritilgan matn avtomatik nutqni tanish (Whisper STT) tomonidan yaratilgan va qozog'cha yoki boshqa turkiy tildagi fonetik yozuv bo'lishi mumkin, chunki Whisper o'zbek tilini qozog'cha sifatida taniydi.
 
 Vazifangiz:
-1. Matnni to'g'ri adabiy o'zbek tiliga o'tkazing (lotin yozuvida)
-2. Gaplar orasiga to'g'ri tinish belgilari qo'ying (nuqta, vergul, savol belgisi)
-3. So'zlarni to'g'ri yozing: o'zbek → o'zbek, ko'proq → ko'proq, bo'ladi → bo'ladi
-4. Har bir yangi gapirayotgan kishi uchun yangi qator boshlang
-5. Mazmunni o'ZGARTIRMANG — faqat imlo va tinish belgilarini tuzating
-6. Faqat tahrirлangan matnni qaytaring, hech qanday izoh yozmang`,
+1. Matnni to'liq o'qib, bank suhbatining ma'nosini tushunib oling
+2. Matnni to'g'ri adabiy o'zbek tiliga tarjima yoki o'tkazing — LOTIN YOZUVIDA
+3. Bank kontekstida to'g'ri terminlarni ishlating:
+   - kredit, omonat, ipoteka, karta, foiz, muddati, to'lov, filial, ariza
+4. Salomlashuvlarni to'g'ri yozing: Assalomu alaykum, Alaykum assalom
+5. Har bir yangi gapirayotgan kishi yangi qatordan boshlaydi
+6. To'g'ri tinish belgilari qo'ying (nuqta, vergul, savol belgisi)
+7. To'g'ri apostroflar: o'zbek, ko'proq, bo'ladi, qanday, ma'lumot, so'm, to'lov
+8. MAZMUNNI O'ZGARTIRMANG — faqat til va imlo
+
+Faqat tayyor o'zbek matnini qaytaring. Hech qanday izoh, tarjima eslatmasi yoki qo'shimcha so'z yozmang.`,
         },
         {
           role: 'user',
-          content: `Xom transkript:\n\n${rawTranscript.slice(0, 5000)}`,
+          content: `Xom transkript (Whisper STT, ehtimol qozog'cha yozuvda):\n\n${rawTranscript.slice(0, 5000)}`,
         },
       ],
       temperature: 0.1,

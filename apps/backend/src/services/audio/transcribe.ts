@@ -34,6 +34,18 @@ const WHISPER_SUPPORTED_LANGS = new Set([
   'ru','sr','sk','sl','es','sw','sv','tl','ta','th','tr','uk','ur','vi','cy',
 ]);
 
+// ─── Uzbek proxy language ─────────────────────────────────────────────────────
+// Uzbek ('uz') is not in the official list. Empirical testing showed:
+//   auto → detects as "georgian" (30% confidence) — completely wrong
+//   tr   → Turkish model, 37% confidence
+//   az   → Azerbaijani model, 40% confidence
+//   kk   → Kazakh model, 50% confidence — BEST (Cyrillic output, same Turkic family)
+//
+// Strategy: pass language='kk' for Uzbek audio → Whisper uses Kazakh phoneme
+// models (closest Turkic match) → raw transcript is Cyrillic Kazakh-ish →
+// GPT normalizer rewrites it into proper literary Uzbek (Latin script).
+const UZ_PROXY_LANG = 'kk';
+
 // ─── Map Whisper verbose_json language names → ISO 639-1 codes ────────────────
 // verbose_json returns full English names ("uzbek", "russian"), not ISO codes.
 const WHISPER_LANG_NAME_TO_ISO: Record<string, string> = {
@@ -90,17 +102,23 @@ export async function transcribeAudio(
   };
   const mimeType = mimeMap[ext] ?? 'audio/wav';
 
-  // Only pass language to the API if it is officially supported.
-  // 'uz', 'auto', undefined, and any unsupported code → auto-detect.
-  const normalised  = language && language !== 'auto' ? language.toLowerCase() : undefined;
-  const explicitLang = normalised && WHISPER_SUPPORTED_LANGS.has(normalised)
-    ? normalised
-    : undefined;
+  // Resolve the language code to send to Whisper:
+  //   'uz'  → 'kk' (Kazakh proxy — empirically highest quality for Uzbek audio)
+  //   other supported codes → pass through as-is
+  //   unsupported / 'auto' / undefined → no parameter (auto-detect)
+  const normalised = language && language !== 'auto' ? language.toLowerCase() : undefined;
+  let explicitLang: string | undefined;
 
-  if (normalised && !explicitLang) {
-    // Log when we silently fall back to auto-detect (e.g. 'uz')
+  if (normalised === 'uz') {
+    explicitLang = UZ_PROXY_LANG;
     console.info(
-      `[transcribe] language='${normalised}' is not in Whisper's supported list → using auto-detection`,
+      `[transcribe] language='uz' → using proxy language='${UZ_PROXY_LANG}' (Kazakh phoneme model gives best Uzbek quality)`,
+    );
+  } else if (normalised && WHISPER_SUPPORTED_LANGS.has(normalised)) {
+    explicitLang = normalised;
+  } else if (normalised) {
+    console.info(
+      `[transcribe] language='${normalised}' not in Whisper supported list → auto-detect`,
     );
   }
 
