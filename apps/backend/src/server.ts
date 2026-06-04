@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import Fastify, { type FastifyInstance } from 'fastify';
+import multipart from '@fastify/multipart';
 import { pathToFileURL } from 'node:url';
 import { healthRoute } from './routes/health.js';
 import { widgetConfigRoute } from './routes/widget-config.js';
@@ -10,11 +11,20 @@ import { originPlugin } from './middleware/origin.js';
 import { rateLimitPlugin } from './middleware/rate-limit.js';
 import { adminRoute } from './routes/admin.js';
 import { leadsRoute } from './routes/leads.js';
+import { callsRoute } from './routes/admin/calls.js';
 
 export async function build(): Promise<FastifyInstance> {
   const app = Fastify({
     logger: false,
     bodyLimit: 8 * 1024,
+  });
+
+  // Multipart plugin for audio file uploads (50 MB limit per file)
+  await app.register(multipart, {
+    limits: {
+      fileSize: 50 * 1024 * 1024,   // 50 MB
+      files:    10,                  // max 10 files per request
+    },
   });
 
   await app.register(requestIdPlugin);
@@ -26,6 +36,7 @@ export async function build(): Promise<FastifyInstance> {
   await app.register(chatRoute);
   await app.register(leadsRoute);
   await app.register(adminRoute);
+  await app.register(callsRoute);
 
   return app;
 }

@@ -18,13 +18,15 @@ const DEFAULT_CONFIG: WidgetConfigResponse = {
   },
 };
 
-// Admin pages (only the 5 business-critical sections)
+// Admin pages
 import { LoginPage }         from './admin/pages/Login.tsx';
 import { DashboardPage }     from './admin/pages/Dashboard.tsx';
 import { ConversationsPage } from './admin/pages/Conversations.tsx';
 import { LeadsPage }         from './admin/pages/Leads.tsx';
 import { ComplaintsPage }    from './admin/pages/Complaints.tsx';
 import { SettingsPage }      from './admin/pages/Settings.tsx';
+import { CallsPage }         from './admin/pages/Calls.tsx';
+import { CallDetailPage }    from './admin/pages/CallDetail.tsx';
 
 // Protected route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -91,12 +93,14 @@ export default function App() {
         {/* Admin auth */}
         <Route path="/admin/login" element={<LoginPage />} />
 
-        {/* Protected admin — 5 business sections */}
+        {/* Protected admin */}
         <Route path="/admin"               element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/admin/conversations" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
         <Route path="/admin/leads"         element={<ProtectedRoute><LeadsPage /></ProtectedRoute>} />
         <Route path="/admin/complaints"    element={<ProtectedRoute><ComplaintsPage /></ProtectedRoute>} />
         <Route path="/admin/settings"      element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/admin/calls"         element={<ProtectedRoute><CallsPage /></ProtectedRoute>} />
+        <Route path="/admin/calls/:id"     element={<ProtectedRoute><CallDetailPage /></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

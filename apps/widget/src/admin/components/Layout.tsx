@@ -3,11 +3,12 @@ import { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth.ts';
 
 const NAV = [
-  { to: '/admin',              label: 'Панель управления', icon: '📊', exact: true },
-  { to: '/admin/conversations', label: 'Диалоги',          icon: '💬' },
-  { to: '/admin/leads',        label: 'Лиды',              icon: '👥' },
-  { to: '/admin/complaints',   label: 'Жалобы',            icon: '⚠️' },
-  { to: '/admin/settings',     label: 'Настройки',         icon: '⚙️' },
+  { to: '/admin',               label: 'Панель управления', icon: '📊', exact: true },
+  { to: '/admin/conversations', label: 'Диалоги',           icon: '💬' },
+  { to: '/admin/leads',         label: 'Лиды',              icon: '👥' },
+  { to: '/admin/complaints',    label: 'Жалобы',            icon: '⚠️' },
+  { to: '/admin/calls',         label: 'Аналитика звонков', icon: '📞' },
+  { to: '/admin/settings',      label: 'Настройки',         icon: '⚙️' },
 ];
 
 interface Props {
