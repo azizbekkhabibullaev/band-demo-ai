@@ -76,27 +76,22 @@ function KpiBox({ label, value, sub, accent }: {
 }
 
 // ─── Language options ─────────────────────────────────────────────────────────
+// Only uz and ru are supported. Auto-detection is disabled.
 
-type UploadLanguage = 'uz' | 'ru' | 'auto';
+type UploadLanguage = 'uz' | 'ru';
 
 const LANG_OPTIONS: { value: UploadLanguage; flag: string; label: string; hint: string }[] = [
   {
     value: 'uz',
     flag:  '🇺🇿',
     label: "O'zbekcha",
-    hint:  "Whisper avtomatik aniqlab, o'zbek normallovchi ishlatiladi",
+    hint:  "O'zbek tili: transkript + normalizatsiya + tahlil o'zbek tilida",
   },
   {
     value: 'ru',
     flag:  '🇷🇺',
     label: 'Русский',
-    hint:  'Whisper принудительно переводит на русский язык',
-  },
-  {
-    value: 'auto',
-    flag:  '🔍',
-    label: 'Авто-определение',
-    hint:  'Whisper автоматически определяет язык',
+    hint:  'Русский язык: транскрипт + анализ на русском',
   },
 ];
 
@@ -106,14 +101,20 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging]     = useState(false);
   const [uploading, setUploading]   = useState(false);
-  const [language, setLanguage]     = useState<UploadLanguage>('auto');
+  // null = no selection yet — upload is blocked until user picks uz or ru
+  const [language, setLanguage]     = useState<UploadLanguage | null>(null);
   const [uploadResult, setUploadResult] = useState<{ count: number; names: string[] } | null>(null);
   const [uploadError, setUploadError]   = useState('');
 
   const ACCEPT = '.mp3,.wav,.m4a,.webm,.mp4,.ogg,.flac';
+  const canUpload = language !== null && !uploading;
 
   async function handleFiles(files: FileList | null): Promise<void> {
     if (!files || files.length === 0) return;
+    if (!language) {
+      setUploadError('Выберите язык перед загрузкой');
+      return;
+    }
     const arr = Array.from(files);
     setUploading(true);
     setUploadError('');
@@ -129,7 +130,7 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
     }
   }
 
-  const selectedLang = LANG_OPTIONS.find(l => l.value === language)!;
+  const selectedLang = language ? LANG_OPTIONS.find(l => l.value === language) : null;
 
   return (
     <div className="bg-[#161b27] rounded-xl border border-white/[0.07] p-5">
@@ -139,80 +140,65 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
         <span className="ml-auto text-[10px] text-white/25">MP3 · WAV · M4A · до 50 МБ</span>
       </div>
 
-      {/* ── Language selector — critical for Uzbek quality ── */}
+      {/* ── Language selector — required before upload ── */}
       <div className="mb-3">
-        <div className="text-[10px] text-white/40 uppercase tracking-wide mb-1.5 font-medium">
-          Язык записи
-          <span className="ml-1.5 text-orange-400/70 normal-case font-normal">
-            ⚠️ Выберите правильно — влияет на качество транскрипции
-          </span>
+        <div className="text-[10px] uppercase tracking-wide mb-1.5 font-medium flex items-center gap-1.5">
+          <span className={language ? 'text-white/40' : 'text-amber-400'}>Язык записи</span>
+          {!language && (
+            <span className="text-amber-400 font-semibold">← Выберите язык</span>
+          )}
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           {LANG_OPTIONS.map(opt => (
             <button
               key={opt.value}
-              onClick={() => setLanguage(opt.value)}
+              onClick={() => { setLanguage(opt.value); setUploadError(''); }}
               className={[
-                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-medium transition-all flex-1 justify-center',
+                'flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-semibold transition-all flex-1 justify-center border',
                 language === opt.value
                   ? opt.value === 'uz'
-                    ? 'bg-emerald-600/30 border border-emerald-500/50 text-emerald-300'
-                    : opt.value === 'ru'
-                      ? 'bg-blue-600/30 border border-blue-500/50 text-blue-300'
-                      : 'bg-white/10 border border-white/20 text-white'
-                  : 'bg-white/[0.03] border border-white/[0.07] text-white/40 hover:text-white/70 hover:bg-white/[0.06]',
+                    ? 'bg-emerald-600/30 border-emerald-500/60 text-emerald-300 ring-1 ring-emerald-500/40'
+                    : 'bg-blue-600/30 border-blue-500/60 text-blue-300 ring-1 ring-blue-500/40'
+                  : 'bg-white/[0.03] border-white/[0.10] text-white/50 hover:text-white/80 hover:bg-white/[0.07] hover:border-white/20',
               ].join(' ')}
             >
-              <span>{opt.flag}</span>
+              <span className="text-base">{opt.flag}</span>
               <span>{opt.label}</span>
             </button>
           ))}
         </div>
+
         {/* Hint for selected language */}
-        <p className="text-[10px] text-white/25 mt-1.5 leading-relaxed">
-          {selectedLang.hint}
-        </p>
-        {/* Special Uzbek warning */}
-        {language === 'uz' && (
-          <div className="mt-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-            <p className="text-[11px] text-emerald-300 font-medium">
-              ✓ O'zbek tili tanlandi
-            </p>
-            <p className="text-[10px] text-white/40 mt-0.5">
-              Whisper language=uz + GPT normalizatsiya qadami yoqilgan.
-              Transkript adabiy o'zbek tilida saqlanadi.
-            </p>
-          </div>
-        )}
-        {language === 'auto' && (
-          <div className="mt-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-            <p className="text-[11px] text-orange-300 font-medium">
-              ⚠️ Авто-определение не рекомендуется для узбекских звонков
-            </p>
-            <p className="text-[10px] text-white/40 mt-0.5">
-              Whisper часто транскрибирует узбекский как фонетическую латиницу.
-              Выберите 🇺🇿 O'zbekcha для правильного результата.
-            </p>
+        {selectedLang && (
+          <div className={[
+            'mt-2 px-3 py-2 rounded-lg border text-[11px]',
+            language === 'uz'
+              ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
+              : 'bg-blue-500/10 border-blue-500/25 text-blue-300',
+          ].join(' ')}>
+            <span className="font-medium">{selectedLang.flag} {selectedLang.label} tanlandi —</span>
+            <span className="text-white/50 ml-1">{selectedLang.hint}</span>
           </div>
         )}
       </div>
 
-      {/* Drop zone */}
+      {/* Drop zone — disabled until language is selected */}
       <div
         className={[
-          'border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200',
-          dragging
-            ? 'border-blue-500 bg-blue-500/10'
-            : 'border-white/[0.12] hover:border-white/25 hover:bg-white/[0.02]',
+          'border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200',
+          canUpload
+            ? 'cursor-pointer hover:border-white/25 hover:bg-white/[0.02]'
+            : 'cursor-not-allowed opacity-40',
+          dragging && canUpload ? 'border-blue-500 bg-blue-500/10' : 'border-white/[0.12]',
           uploading ? 'opacity-50 pointer-events-none' : '',
         ].join(' ')}
-        onClick={() => inputRef.current?.click()}
-        onDragOver={e => { e.preventDefault(); setDragging(true); }}
+        onClick={() => { if (canUpload) inputRef.current?.click(); }}
+        onDragOver={e => { e.preventDefault(); if (canUpload) setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={e => {
           e.preventDefault();
           setDragging(false);
-          void handleFiles(e.dataTransfer.files);
+          if (canUpload) void handleFiles(e.dataTransfer.files);
         }}
       >
         {uploading ? (
@@ -225,16 +211,24 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
             </p>
             <p className="text-[11px] text-white/30">Это может занять 30–90 секунд</p>
           </div>
+        ) : !language ? (
+          <div className="space-y-1.5">
+            <div className="text-3xl opacity-30">🔒</div>
+            <p className="text-[13px] font-medium text-white/30">
+              Сначала выберите язык выше
+            </p>
+            <p className="text-[11px] text-white/20">O'zbekcha или Русский</p>
+          </div>
         ) : (
           <div className="space-y-2">
-            <div className="text-3xl">{selectedLang.flag}</div>
+            <div className="text-3xl">{selectedLang!.flag}</div>
             <p className="text-[13px] font-medium text-white/70">
               Перетащите файлы сюда или{' '}
               <span className="text-blue-400">выберите файл</span>
             </p>
             <p className="text-[11px] text-white/30">
-              Язык: <span className="text-white/50">{selectedLang.flag} {selectedLang.label}</span>
-              {' · '}Несколько файлов поддерживается
+              Язык: <span className="text-white/50">{selectedLang!.flag} {selectedLang!.label}</span>
+              {' · '}до 10 файлов
             </p>
           </div>
         )}

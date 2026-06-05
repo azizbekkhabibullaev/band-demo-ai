@@ -2,92 +2,58 @@
  * Speech-to-Text via OpenAI Whisper API
  * Uses raw fetch (Node 20 native) — no openai SDK required.
  *
- * IMPORTANT — OFFICIAL LANGUAGE SUPPORT:
- *   OpenAI whisper-1 accepts the `language` parameter only for languages in
- *   the officially tested list. Uzbek ('uz') is NOT in that list.
- *   Passing language='uz' returns HTTP 400: "Language 'uz' is not supported."
+ * BUSINESS RULE:
+ *   Only two languages are supported: 'uz' (Uzbek) and 'ru' (Russian).
+ *   The caller MUST pass one of these. It is the source of truth.
+ *   We never read Whisper's detected language — we always return the
+ *   language the caller passed in, unchanged.
  *
- *   Source: https://platform.openai.com/docs/guides/speech-to-text
+ * WHISPER PARAMETER MAPPING:
+ *   'ru' → language='ru'   (officially supported by Whisper API)
+ *   'uz' → language='kk'   (Kazakh proxy — same Turkic family, officially supported,
+ *                            empirically highest quality for Uzbek audio at 50% confidence.
+ *                            'uz' itself returns HTTP 400 unsupported_language.)
  *
- *   FIX: only pass `language` to the API if the code is in WHISPER_SUPPORTED_LANGS.
- *   For Uzbek, omit the language parameter → auto-detection.
- *   Whisper was trained on Uzbek data and CAN transcribe it; the API simply
- *   does not accept 'uz' as a forced code.
- *   The detected language name ("uzbek") is mapped back to ISO 639-1 in the response.
+ * The raw transcript from 'kk' mode is Cyrillic Kazakh-phonetic.
+ * The normalizeUzbek() step (in analyze.ts) converts it to literary Uzbek.
  */
+
+export type SupportedLanguage = 'uz' | 'ru';
 
 export interface TranscribeResult {
   text:            string;
-  language:        string;   // ISO 639-1 code mapped from Whisper's language name
-  detectedName:    string;   // Raw language name Whisper returned (e.g. "uzbek")
+  language:        SupportedLanguage; // Always equals the input language — never Whisper's guess
   durationSeconds: number;
-  confidence:      number;   // 0.0–1.0, derived from segment avg_logprob
+  confidence:      number;            // 0.0–1.0, from segment avg_logprob
 }
 
-// ─── Languages officially supported by the whisper-1 `language` parameter ─────
-// Source: https://platform.openai.com/docs/guides/speech-to-text (2024-06)
-// Do NOT add 'uz' here — it causes HTTP 400 unsupported_language.
-const WHISPER_SUPPORTED_LANGS = new Set([
-  'af','ar','hy','az','be','bs','bg','ca','zh','hr','cs','da','nl','en',
-  'et','fi','fr','gl','de','el','he','hi','hu','is','id','it','ja','kn',
-  'kk','ko','lv','lt','mk','ms','mr','mi','ne','no','fa','pl','pt','ro',
-  'ru','sr','sk','sl','es','sw','sv','tl','ta','th','tr','uk','ur','vi','cy',
-]);
-
-// ─── Uzbek proxy language ─────────────────────────────────────────────────────
-// Uzbek ('uz') is not in the official list. Empirical testing showed:
-//   auto → detects as "georgian" (30% confidence) — completely wrong
-//   tr   → Turkish model, 37% confidence
-//   az   → Azerbaijani model, 40% confidence
-//   kk   → Kazakh model, 50% confidence — BEST (Cyrillic output, same Turkic family)
-//
-// Strategy: pass language='kk' for Uzbek audio → Whisper uses Kazakh phoneme
-// models (closest Turkic match) → raw transcript is Cyrillic Kazakh-ish →
-// GPT normalizer rewrites it into proper literary Uzbek (Latin script).
-const UZ_PROXY_LANG = 'kk';
-
-// ─── Map Whisper verbose_json language names → ISO 639-1 codes ────────────────
-// verbose_json returns full English names ("uzbek", "russian"), not ISO codes.
-const WHISPER_LANG_NAME_TO_ISO: Record<string, string> = {
-  uzbek:        'uz',
-  russian:      'ru',
-  english:      'en',
-  kazakh:       'kk',
-  turkish:      'tr',
-  arabic:       'ar',
-  french:       'fr',
-  german:       'de',
-  spanish:      'es',
-  italian:      'it',
-  japanese:     'ja',
-  chinese:      'zh',
-  korean:       'ko',
-  portuguese:   'pt',
-  ukrainian:    'uk',
-  azerbaijani:  'az',
-  tajik:        'tg',
-  indonesian:   'id',
-  hindi:        'hi',
-  persian:      'fa',
-  belarusian:   'be',
+// Whisper API parameter for each supported language.
+// 'uz' is NOT accepted by the API — use Kazakh ('kk') as proxy.
+const WHISPER_PARAM: Record<SupportedLanguage, string> = {
+  ru: 'ru',   // officially supported
+  uz: 'kk',   // Kazakh proxy — same Turkic family, best empirical result for Uzbek
 };
 
 /**
- * Transcribe an audio buffer using OpenAI Whisper.
+ * Transcribe audio using OpenAI Whisper.
  *
  * @param buffer    Raw audio bytes
- * @param filename  Original filename (used for MIME type inference)
+ * @param filename  Original filename (for MIME type)
  * @param apiKey    OpenAI API key
- * @param language  Caller's language hint ('ru', 'uz', 'auto', or undefined).
- *                  Only languages in WHISPER_SUPPORTED_LANGS are forwarded to
- *                  the API. 'uz' and unknown codes trigger auto-detection.
+ * @param language  'uz' or 'ru' — REQUIRED, caller's selection is the source of truth
  */
 export async function transcribeAudio(
   buffer: Buffer,
   filename: string,
   apiKey: string,
-  language?: string,
+  language: SupportedLanguage,
 ): Promise<TranscribeResult> {
+  if (language !== 'uz' && language !== 'ru') {
+    throw new Error(
+      `transcribeAudio: unsupported language "${language}". Only 'uz' and 'ru' are accepted.`,
+    );
+  }
+
   const ext = filename.split('.').pop()?.toLowerCase() ?? 'wav';
   const mimeMap: Record<string, string> = {
     mp3:  'audio/mpeg',
@@ -102,34 +68,16 @@ export async function transcribeAudio(
   };
   const mimeType = mimeMap[ext] ?? 'audio/wav';
 
-  // Resolve the language code to send to Whisper:
-  //   'uz'  → 'kk' (Kazakh proxy — empirically highest quality for Uzbek audio)
-  //   other supported codes → pass through as-is
-  //   unsupported / 'auto' / undefined → no parameter (auto-detect)
-  const normalised = language && language !== 'auto' ? language.toLowerCase() : undefined;
-  let explicitLang: string | undefined;
-
-  if (normalised === 'uz') {
-    explicitLang = UZ_PROXY_LANG;
-    console.info(
-      `[transcribe] language='uz' → using proxy language='${UZ_PROXY_LANG}' (Kazakh phoneme model gives best Uzbek quality)`,
-    );
-  } else if (normalised && WHISPER_SUPPORTED_LANGS.has(normalised)) {
-    explicitLang = normalised;
-  } else if (normalised) {
-    console.info(
-      `[transcribe] language='${normalised}' not in Whisper supported list → auto-detect`,
-    );
-  }
+  const whisperParam = WHISPER_PARAM[language];
+  console.info(
+    `[transcribe] file="${filename}" language="${language}" whisper_param="${whisperParam}"`,
+  );
 
   const form = new FormData();
   form.append('file', new Blob([buffer], { type: mimeType }), filename);
   form.append('model', 'whisper-1');
   form.append('response_format', 'verbose_json');
-
-  if (explicitLang) {
-    form.append('language', explicitLang);
-  }
+  form.append('language', whisperParam);  // Always set — no auto-detection ever
 
   const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
@@ -143,40 +91,29 @@ export async function transcribeAudio(
   }
 
   const data = await res.json() as {
-    text:       string;
-    language?:  string;   // Full name: "uzbek", "russian", …
-    duration?:  number;
-    segments?:  { avg_logprob?: number; no_speech_prob?: number }[];
+    text:      string;
+    language?: string;  // Whisper's guess — intentionally IGNORED
+    duration?: number;
+    segments?: { avg_logprob?: number }[];
   };
 
-  // ── Language: map full name → ISO code ───────────────────────────────────
-  const rawLangName = (data.language ?? '').toLowerCase().trim();
-  const isoCode = WHISPER_LANG_NAME_TO_ISO[rawLangName]
-    ?? explicitLang       // fall back to the code we sent
-    ?? normalised         // fall back to the hint
-    ?? 'ru';              // final default
-
-  // ── Confidence: derived from segment avg_logprob ─────────────────────────
-  // avg_logprob ≈ 0 → probability ≈ 1.0 (perfect)
-  // avg_logprob ≈ -1 → probability ≈ 0.0 (noise/garbled)
-  // Linear clamp: confidence = 1 + avg_logprob, clamped to [0, 1]
-  let confidence = 0.5; // default if no segments
+  // Confidence from segment avg_logprob (0 = perfect, -1 = noise)
+  let confidence = 0.5;
   if (data.segments && data.segments.length > 0) {
     const avgLogprob = data.segments.reduce(
-      (sum, s) => sum + (s.avg_logprob ?? -0.5),
-      0,
+      (sum, s) => sum + (s.avg_logprob ?? -0.5), 0,
     ) / data.segments.length;
     confidence = Math.max(0, Math.min(1, 1 + avgLogprob));
   }
 
   console.info(
-    `[transcribe] file="${filename}" whisper_lang="${rawLangName}" iso="${isoCode}" confidence=${confidence.toFixed(2)} duration=${data.duration ?? 0}s`,
+    `[transcribe] done: language="${language}" confidence=${confidence.toFixed(2)} ` +
+    `duration=${data.duration ?? 0}s whisper_saw="${data.language ?? '?'}" (ignored)`,
   );
 
   return {
     text:            data.text?.trim() ?? '',
-    language:        isoCode,
-    detectedName:    rawLangName || isoCode,
+    language,        // Return the CALLER'S language, not Whisper's detection
     durationSeconds: Math.round(data.duration ?? 0),
     confidence,
   };

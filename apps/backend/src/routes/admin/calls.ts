@@ -2,7 +2,7 @@
  * VOC (Voice of Customer) — Call Analytics API
  *
  * POST   /api/admin/calls/upload       — upload audio files
- *          ?language=uz|ru|auto         — language hint (uz uses auto-detect, see below)
+ *          ?language=uz|ru              — REQUIRED. Selected language is source of truth.
  * GET    /api/admin/calls              — list with filters
  * GET    /api/admin/calls/analytics    — KPI stats
  * GET    /api/admin/calls/trends       — period-over-period trends
@@ -10,13 +10,16 @@
  * GET    /api/admin/calls/:id          — single call detail
  * DELETE /api/admin/calls/:id          — delete record
  *
+ * SUPPORTED LANGUAGES: uz (Uzbek) and ru (Russian) only.
+ * The language selected in the UI is the source of truth.
+ * Whisper's detected language is NEVER used or stored.
+ *
  * PIPELINE per uploaded file:
- *   1. Whisper STT  (only officially-supported language codes forwarded to API;
- *                    'uz' uses auto-detection — 'uz' is NOT a valid Whisper param)
- *   2. Uzbek normalizer  (GPT rewrite — when Whisper detected OR hint is 'uz')
- *   3. GPT classification  (language-aware prompt)
- *   4. Auto-lead creation  (if leadScore ≥ 60)
- *   5. DB persist (including confidence + detected_language from Whisper)
+ *   1. Whisper STT  (language='uz' → kk proxy; language='ru' → ru)
+ *   2. Uzbek normalizer (GPT rewrite — only when language='uz')
+ *   3. GPT classification (language-aware prompt, summary always in Russian)
+ *   4. Auto-lead creation (if leadScore ≥ 60)
+ *   5. DB persist
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
@@ -25,7 +28,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getPool } from '../../db/client.js';
 import { verifyAdminJwt, extractAdminToken } from '../../admin/auth.js';
-import { transcribeAudio } from '../../services/audio/transcribe.js';
+import { transcribeAudio, type SupportedLanguage } from '../../services/audio/transcribe.js';
 import { analyzeTranscript, normalizeUzbek } from '../../services/audio/analyze.js';
 import { createLead } from '../../features/leads/service.js';
 
@@ -64,18 +67,17 @@ function validateExt(name: string): boolean {
 /**
  * Full processing pipeline for a single call.
  *
- * hintLanguage = 'uz' | 'ru' | 'auto' | undefined
- *   - 'uz'  → transcribeAudio uses auto-detect ('uz' is NOT a valid Whisper param),
- *              Uzbek normalizer runs if Whisper confirms or hint='uz'
- *   - 'ru'  → forwarded to Whisper (officially supported)
- *   - 'auto' / undefined → Whisper auto-detect
+ * language = 'uz' | 'ru'  — REQUIRED, from user selection, never auto-detected.
+ *
+ *   'uz' → Whisper STT (kk proxy) → GPT Uzbek normalizer → GPT classifier (uz prompt)
+ *   'ru' → Whisper STT (ru)       → GPT classifier (ru prompt)
  */
 async function processCall(
   callId: string,
   tenantId: string,
   buffer: Buffer,
   filename: string,
-  hintLanguage?: string,
+  language: SupportedLanguage,
 ): Promise<void> {
   const pool = getPool();
   const apiKey = process.env['OPENAI_API_KEY'] ?? '';
@@ -87,34 +89,30 @@ async function processCall(
       [callId],
     );
 
-    // ── Step 1: Speech-to-Text ───────────────────────────────────────────────
-    // transcribeAudio internally validates the language code against Whisper's
-    // supported list. 'uz' is silently converted to auto-detect inside that fn.
-    const transcription = await transcribeAudio(buffer, filename, apiKey, hintLanguage);
-
-    // Use Whisper's detected ISO code as the primary language signal.
-    // The hint is used as a fallback (e.g. if Whisper returns empty language).
-    const detectedLang = transcription.language;  // ISO 639-1, mapped from Whisper name
+    // ── Step 1: Whisper STT ──────────────────────────────────────────────────
+    // language is passed directly — transcribeAudio handles the kk proxy for uz.
+    // Whisper's detected language is ignored; the selected language is the truth.
+    const transcription = await transcribeAudio(buffer, filename, apiKey, language);
 
     console.info(
-      `[processCall] id=${callId} hint=${hintLanguage ?? 'none'} ` +
-      `detected="${transcription.detectedName}" iso="${detectedLang}" ` +
-      `confidence=${transcription.confidence.toFixed(2)}`,
+      `[processCall] id=${callId} language="${language}" ` +
+      `confidence=${transcription.confidence.toFixed(2)} ` +
+      `duration=${transcription.durationSeconds}s`,
     );
 
-    // ── Step 2: Uzbek normalization ──────────────────────────────────────────
-    // Whisper's raw Uzbek output lacks punctuation and proper apostrophes.
-    // Run the GPT normalizer if:
-    //   (a) Whisper detected the language as Uzbek, OR
-    //   (b) the user explicitly hinted 'uz' (trust the operator over auto-detect)
-    const isUzbek = detectedLang === 'uz' || hintLanguage === 'uz';
+    // ── Step 2: Uzbek normalizer (uz only) ───────────────────────────────────
+    // Whisper's kk-proxy output is Cyrillic Kazakh-phonetic.
+    // GPT rewrites it into literary Uzbek (Latin script, proper apostrophes).
     let finalTranscript = transcription.text;
-    if (isUzbek && finalTranscript.length > 10) {
+    if (language === 'uz' && finalTranscript.length > 10) {
       finalTranscript = await normalizeUzbek(finalTranscript, apiKey);
     }
 
     // ── Step 3: GPT classification ───────────────────────────────────────────
-    const analysis = await analyzeTranscript(finalTranscript, apiKey, 'gpt-4o-mini', detectedLang);
+    // Pass the selected language so the classifier uses the correct prompt
+    // and produces the correct category/topic vocabulary.
+    // Summary is always written in Russian (management reads Russian).
+    const analysis = await analyzeTranscript(finalTranscript, apiKey, 'gpt-4o-mini', language);
 
     // ── Step 4: Auto-create lead ─────────────────────────────────────────────
     let leadId: string | null = null;
@@ -123,7 +121,7 @@ async function processCall(
         const lead = await createLead({
           tenantId,
           leadType:        'product_interest',
-          lang:            detectedLang,
+          lang:            language,
           productInterest: analysis.leadInterest || analysis.category,
           interestType:    analysis.category,
           message:         `[Из звонка] ${analysis.summary.slice(0, 300)}`,
@@ -133,7 +131,7 @@ async function processCall(
       } catch { /* non-critical */ }
     }
 
-    // ── Step 5: Persist results ──────────────────────────────────────────────
+    // ── Step 5: Persist ──────────────────────────────────────────────────────
     await pool.query(
       `UPDATE calls SET
          duration_seconds = $1, language = $2,
@@ -143,13 +141,13 @@ async function processCall(
          priority = $9, topics = $10::jsonb,
          is_lead = $11, lead_score = $12, lead_interest = $13, lead_id = $14,
          is_complaint = $15, complaint_notes = $16,
-         confidence = $17, detected_language = $18,
+         confidence = $17,
          status = 'completed', updated_at = now()
-       WHERE id = $19`,
+       WHERE id = $18`,
       [
         transcription.durationSeconds,
-        detectedLang,
-        finalTranscript,                  // normalized if Uzbek, raw otherwise
+        language,                          // selected language — always stored as-is
+        finalTranscript,
         analysis.summary,
         analysis.sentiment,
         analysis.sentimentScore,
@@ -163,8 +161,7 @@ async function processCall(
         leadId,
         analysis.isComplaint,
         analysis.complaintNotes,
-        transcription.confidence,         // Whisper segment avg_logprob → 0.0–1.0
-        transcription.detectedName,       // raw name: "uzbek", "russian", …
+        transcription.confidence,
         callId,
       ],
     );
@@ -188,21 +185,25 @@ export async function callsRoute(app: FastifyInstance): Promise<void> {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // POST /api/admin/calls/upload?language=uz|ru|auto
+  // POST /api/admin/calls/upload?language=uz|ru
   //
-  // language query param is a hint:
-  //   ?language=uz   → auto-detect ('uz' is NOT a valid Whisper code) +
-  //                    run Uzbek normalizer if detected/hinted as Uzbek
-  //   ?language=ru   → forward 'ru' to Whisper (officially supported)
-  //   ?language=auto → Whisper auto-detect (default)
+  // language is REQUIRED. Returns 400 if missing or invalid.
+  //   ?language=uz   → Uzbek pipeline (kk proxy + normalizer)
+  //   ?language=ru   → Russian pipeline
   // ──────────────────────────────────────────────────────────────────────────
   app.post('/api/admin/calls/upload', async (req, reply) => {
     const claims = auth(req, reply);
     if (!claims) return;
 
-    // Language from query string — simplest and most reliable approach
-    const { language: langParam = 'auto' } = req.query as Record<string, string>;
-    const hintLanguage = ['uz', 'ru', 'en'].includes(langParam) ? langParam : undefined;
+    const { language: langParam } = req.query as Record<string, string>;
+
+    // Strict validation — only uz and ru accepted
+    if (langParam !== 'uz' && langParam !== 'ru') {
+      return reply.code(400).send({
+        error: 'language parameter is required and must be "uz" or "ru"',
+      });
+    }
+    const language = langParam as SupportedLanguage;
 
     await mkdir(UPLOADS_DIR, { recursive: true });
 
@@ -245,18 +246,18 @@ export async function callsRoute(app: FastifyInstance): Promise<void> {
         const { rows } = await pool.query<{ id: string }>(
           `INSERT INTO calls (tenant_id, filename, file_path, language, status)
            VALUES ($1, $2, $3, $4, 'pending') RETURNING id`,
-          [claims.tenant, p.filename, filePath, hintLanguage ?? 'auto'],
+          [claims.tenant, p.filename, filePath, language],
         );
         const callId = rows[0]!.id;
         created.push({
           callId,
-          filename:  p.filename,
-          status:    'pending',
-          language:  hintLanguage ?? 'auto',
+          filename: p.filename,
+          status:   'pending',
+          language,
         });
 
         // Fire-and-forget — non-blocking, processes in background
-        processCall(callId, claims.tenant, buffer, p.filename, hintLanguage)
+        processCall(callId, claims.tenant, buffer, p.filename, language)
           .catch(() => undefined);
       }
     } catch (err) {

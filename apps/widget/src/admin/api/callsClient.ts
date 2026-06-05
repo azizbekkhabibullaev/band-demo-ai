@@ -100,12 +100,12 @@ export interface UploadedCall {
 
 /**
  * Upload audio files for processing.
- * language: 'uz' | 'ru' | 'auto'
- *   IMPORTANT: always pass 'uz' for Uzbek audio — Whisper auto-detect is unreliable.
+ * language: 'uz' | 'ru' — REQUIRED. Selected language is the source of truth.
+ * Auto-detection is not supported and will be rejected by the backend.
  */
 export async function uploadCalls(
   files: File[],
-  language: 'uz' | 'ru' | 'auto' = 'auto',
+  language: 'uz' | 'ru',
 ): Promise<{ uploaded: UploadedCall[]; count: number }> {
   const form = new FormData();
   for (const file of files) form.append('file', file);
