@@ -8,14 +8,18 @@
  *   We never read Whisper's detected language — we always return the
  *   language the caller passed in, unchanged.
  *
- * WHISPER PARAMETER MAPPING:
- *   'ru' → language='ru'   (officially supported by Whisper API)
- *   'uz' → language='kk'   (Kazakh proxy — same Turkic family, officially supported,
- *                            empirically highest quality for Uzbek audio at 50% confidence.
- *                            'uz' itself returns HTTP 400 unsupported_language.)
+ * WHISPER PARAMETER MAPPING (evidence-based, A/B tested 2026-06-05):
+ *   'ru' → language='ru'    (officially supported; directly accepted)
+ *   'uz' → no language param (Whisper auto-detect)
  *
- * The raw transcript from 'kk' mode is Cyrillic Kazakh-phonetic.
- * The normalizeUzbek() step (in analyze.ts) converts it to literary Uzbek.
+ * Why no explicit param for Uzbek:
+ *   - 'uz' returns HTTP 400 unsupported_language.
+ *   - 'kk' (Kazakh proxy) was tested and scored LOWER than auto-detect after
+ *     GPT normalization (9 Uzbek words vs 11, garbled artifacts remained).
+ *   - Auto-detect misidentifies as "georgian" (30% confidence) but the Latin
+ *     phonetic output is actually more amenable to GPT normalization.
+ *   - The selected language 'uz' still drives the normalizer and classifier.
+ *     Whisper's detected language is ignored in all cases.
  */
 
 export type SupportedLanguage = 'uz' | 'ru';
@@ -27,11 +31,11 @@ export interface TranscribeResult {
   confidence:      number;            // 0.0–1.0, from segment avg_logprob
 }
 
-// Whisper API parameter for each supported language.
-// 'uz' is NOT accepted by the API — use Kazakh ('kk') as proxy.
-const WHISPER_PARAM: Record<SupportedLanguage, string> = {
-  ru: 'ru',   // officially supported
-  uz: 'kk',   // Kazakh proxy — same Turkic family, best empirical result for Uzbek
+// Whisper API 'language' parameter for each supported language.
+// undefined = omit the parameter (Whisper auto-detects the acoustic signal).
+const WHISPER_PARAM: Record<SupportedLanguage, string | undefined> = {
+  ru: 'ru',       // officially supported; pass explicitly
+  uz: undefined,  // 'uz' is unsupported; auto-detect gives better normalization output
 };
 
 /**
@@ -70,14 +74,18 @@ export async function transcribeAudio(
 
   const whisperParam = WHISPER_PARAM[language];
   console.info(
-    `[transcribe] file="${filename}" language="${language}" whisper_param="${whisperParam}"`,
+    `[transcribe] file="${filename}" language="${language}" ` +
+    `whisper_param=${whisperParam ? `"${whisperParam}"` : 'omitted (auto)'}`,
   );
 
   const form = new FormData();
   form.append('file', new Blob([buffer], { type: mimeType }), filename);
   form.append('model', 'whisper-1');
   form.append('response_format', 'verbose_json');
-  form.append('language', whisperParam);  // Always set — no auto-detection ever
+  if (whisperParam) {
+    form.append('language', whisperParam);  // Set only when defined (ru)
+    // uz: omitted — auto-detect produces better normalization output than kk proxy
+  }
 
   const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
