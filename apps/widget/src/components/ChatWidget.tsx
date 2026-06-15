@@ -6,7 +6,7 @@ import { WidgetButton } from './WidgetButton.tsx';
 import { Header } from './Header.tsx';
 import { MessageList } from './MessageList.tsx';
 import { InputBar } from './InputBar.tsx';
-import { VoiceModal } from './VoiceModal.tsx';
+import { VoiceCallPanel } from './VoiceCallPanel.tsx';
 
 interface Props {
   config: WidgetConfigResponse;
@@ -358,20 +358,22 @@ export function ChatWidget({ config }: Props) {
             max-sm:h-[85svh]
             sm:h-[620px]
           ">
-            <Header
-              displayName={config.branding.displayName}
-              lang={lang}
-              enabledLangs={enabledLangs}
-              onClose={closeWidget}
-              onLangChange={handleLangChange}
-              onVoiceToggle={() => setVoiceOpen(v => !v)}
-              voiceActive={voiceOpen}
-            />
+            {/* Header hidden during a voice call — VoiceCallPanel owns the full panel */}
+            {!voiceOpen && (
+              <Header
+                displayName={config.branding.displayName}
+                lang={lang}
+                enabledLangs={enabledLangs}
+                onClose={closeWidget}
+                onLangChange={handleLangChange}
+                onVoiceToggle={() => setVoiceOpen(v => !v)}
+                voiceActive={voiceOpen}
+              />
+            )}
 
-            {/* Voice mode — replaces chat body, keeps header + same container */}
+            {/* Voice call mode — fills entire panel, no header, hands-free */}
             {voiceOpen && sessionId && !sessionError && (
-              <VoiceModal
-                isOpen={voiceOpen}
+              <VoiceCallPanel
                 onClose={() => setVoiceOpen(false)}
                 sendMessage={sendMessage}
                 messages={messages}
@@ -379,7 +381,6 @@ export function ChatWidget({ config }: Props) {
                 sessionId={sessionId}
                 lang={lang}
                 displayName={config.branding.displayName}
-                hasLead={!!leadSubmitted}
               />
             )}
 

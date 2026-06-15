@@ -47,29 +47,22 @@ export function Header({ displayName, lang, enabledLangs, onClose, onLangChange,
         </div>
       </div>
 
-      {/* Voice toggle — only for Russian (Phase 1) */}
+      {/* Voice call button — Russian only */}
       {onVoiceToggle && lang === 'ru' && (
         <button
           onClick={onVoiceToggle}
-          title={voiceActive ? 'Вернуться в чат' : 'Голосовой режим'}
-          aria-label={voiceActive ? 'Вернуться в чат' : 'Голосовой режим'}
+          title={voiceActive ? 'Вернуться в чат' : 'Голосовой звонок'}
+          aria-label={voiceActive ? 'Вернуться в чат' : 'Голосовой звонок'}
           className={[
             'shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-150',
             voiceActive
               ? 'bg-blue-300/30 ring-1 ring-blue-300/50'
               : 'hover:bg-white/15 active:bg-white/25',
           ].join(' ')}>
-          {voiceActive ? (
-            /* Chat icon — return to text */
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-white/90">
-              <path fillRule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v7a2 2 0 01-2 2H6l-4 4V5z" clipRule="evenodd"/>
-            </svg>
-          ) : (
-            /* Mic icon — enter voice */
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-white/90">
-              <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd"/>
-            </svg>
-          )}
+          {/* Phone icon — indicates a real call, not push-to-talk */}
+          <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-white/90">
+            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+          </svg>
         </button>
       )}
 
