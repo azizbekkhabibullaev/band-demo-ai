@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { AdminLayout } from '../components/Layout.tsx';
 import { KpiCard } from '../components/KpiCard.tsx';
 import { LineChart } from '../components/MiniChart.tsx';
-import { getDashboard, getComplaints, getQuickActionStats, type DashboardData, type ComplaintStat, type QuickActionStats } from '../api/client.ts';
+import { getDashboard, getComplaints, getQuickActionStats, getVoiceStats, type DashboardData, type ComplaintStat, type QuickActionStats, type VoiceStats } from '../api/client.ts';
 
 const PERIOD_OPTIONS = [
   { label: 'Сегодня',    days: 1 },
@@ -30,15 +30,16 @@ export function DashboardPage() {
   const [days, setDays] = useState(7);
   const [data, setData] = useState<DashboardData | null>(null);
   const [complaints, setComplaints] = useState<ComplaintStat[]>([]);
-  const [qaStats, setQaStats] = useState<QuickActionStats | null>(null);
+  const [qaStats, setQaStats]       = useState<QuickActionStats | null>(null);
+  const [voiceStats, setVoiceStats] = useState<VoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     setLoading(true);
     setError('');
-    Promise.all([getDashboard(days), getComplaints(days), getQuickActionStats(days)])
-      .then(([d, c, qa]) => { setData(d); setComplaints(c.complaints); setQaStats(qa); })
+    Promise.all([getDashboard(days), getComplaints(days), getQuickActionStats(days), getVoiceStats(days)])
+      .then(([d, c, qa, vs]) => { setData(d); setComplaints(c.complaints); setQaStats(qa); setVoiceStats(vs); })
       .catch(e => setError(String(e)))
       .finally(() => setLoading(false));
   }, [days]);
@@ -354,6 +355,45 @@ export function DashboardPage() {
               </div>
             )}
           </>
+        )}
+
+        {/* ── VOICE ANALYTICS ── */}
+        {voiceStats !== null && (
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🎤</span>
+              <h3 className="text-[13px] font-semibold text-white">Голосовой помощник</h3>
+              <span className="text-[10px] text-blue-400/70 ml-1">Phase 1 · Только русский</span>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <KpiCard
+                label="Сессии"
+                value={voiceStats.total.toLocaleString('ru-RU')}
+                sub={`за ${days} дней`}
+                icon="🎙️" accent="#6366f1"
+              />
+              <KpiCard
+                label="Ср. длительность"
+                value={voiceStats.avgDurationMs > 0
+                  ? `${Math.round(voiceStats.avgDurationMs / 1000)}с`
+                  : '—'}
+                sub="на сессию"
+                icon="⏱️" accent="#3b82f6"
+              />
+              <KpiCard
+                label="Ср. реплик"
+                value={voiceStats.avgTurns > 0 ? voiceStats.avgTurns.toFixed(1) : '—'}
+                sub="ходов за сессию"
+                icon="💬" accent="#8b5cf6"
+              />
+              <KpiCard
+                label="Голос. лиды"
+                value={voiceStats.leads.toLocaleString('ru-RU')}
+                sub="захвачено"
+                icon="🎯" accent="#10b981"
+              />
+            </div>
+          </div>
         )}
 
         {!loading && !data && !error && (

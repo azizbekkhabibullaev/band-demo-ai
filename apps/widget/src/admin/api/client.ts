@@ -291,3 +291,17 @@ export interface QuickActionStats {
 export async function getQuickActionStats(days = 7): Promise<QuickActionStats> {
   return request(`/api/admin/quick-action-stats?days=${days}`);
 }
+
+// ─── Voice analytics ──────────────────────────────────────────────────────────
+
+export interface VoiceStats {
+  total:         number;
+  avgDurationMs: number;
+  avgTurns:      number;
+  leads:         number;
+  days:          number;
+}
+
+export async function getVoiceStats(days = 30): Promise<VoiceStats> {
+  return request(`/api/admin/voice/stats?days=${days}`);
+}

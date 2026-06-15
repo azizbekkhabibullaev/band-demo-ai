@@ -12,6 +12,7 @@ import { rateLimitPlugin } from './middleware/rate-limit.js';
 import { adminRoute } from './routes/admin.js';
 import { leadsRoute } from './routes/leads.js';
 import { callsRoute } from './routes/admin/calls.js';
+import { voiceRoute } from './routes/voice.js';
 
 export async function build(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -37,6 +38,7 @@ export async function build(): Promise<FastifyInstance> {
   await app.register(leadsRoute);
   await app.register(adminRoute);
   await app.register(callsRoute);
+  await app.register(voiceRoute);
 
   return app;
 }

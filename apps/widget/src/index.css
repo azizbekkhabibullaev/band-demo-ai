@@ -102,6 +102,27 @@ body.admin-mode {
   color: white;
 }
 
+/* ─── Voice assistant animations ─────────────────────────────────────────── */
+@keyframes voice-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.88; }
+  50%       { transform: scale(1.1); opacity: 1; }
+}
+@keyframes voice-ring {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes voice-bar {
+  0%, 100% { height: 5px; }
+  50%       { height: 26px; }
+}
+@keyframes voice-think {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.voice-pulse { animation: voice-pulse 1.8s ease-in-out infinite; }
+.voice-ring  { animation: voice-ring  1.8s ease-out  infinite; }
+.voice-think { animation: voice-think 1.1s linear    infinite; }
+
 /* ─── Prevent horizontal overflow everywhere inside the widget ───────────── */
 .rounded-widget,
 .rounded-widget * {

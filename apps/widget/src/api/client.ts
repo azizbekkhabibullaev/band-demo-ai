@@ -71,6 +71,52 @@ export async function trackQuickActionClick(payload: QuickActionClickPayload): P
   });
 }
 
+// ─── Voice API ────────────────────────────────────────────────────────────────
+
+export async function transcribeVoice(audioBlob: Blob): Promise<string> {
+  const form = new FormData();
+  form.append('file', audioBlob, 'voice.webm');
+  const res = await fetch(`${BASE}/api/voice/transcribe?lang=ru`, { method: 'POST', body: form });
+  if (!res.ok) throw new Error(`transcribe ${res.status}`);
+  const data = await res.json() as { text: string };
+  return data.text ?? '';
+}
+
+export async function synthesizeSpeech(text: string): Promise<ArrayBuffer> {
+  const res = await fetch(`${BASE}/api/voice/synthesize`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error(`synthesize ${res.status}`);
+  return res.arrayBuffer();
+}
+
+export async function trackVoiceSession(payload: {
+  action: 'start' | 'turn' | 'end';
+  voiceSessionId?: string;
+  sessionId?: string;
+  durationMs?: number;
+  isLead?: boolean;
+}): Promise<string | undefined> {
+  const res = await fetch(`${BASE}/api/voice/sessions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action:            payload.action,
+      voice_session_id:  payload.voiceSessionId,
+      session_id:        payload.sessionId,
+      tenant_id:         TENANT_ID,
+      lang:              'ru',
+      duration_ms:       payload.durationMs,
+      is_lead:           payload.isLead,
+    }),
+  });
+  if (!res.ok) return undefined;
+  const data = await res.json() as { voice_session_id?: string };
+  return data.voice_session_id;
+}
+
 export async function streamChat(
   sessionId: string,
   message: string,

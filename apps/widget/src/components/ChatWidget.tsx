@@ -6,6 +6,7 @@ import { WidgetButton } from './WidgetButton.tsx';
 import { Header } from './Header.tsx';
 import { MessageList } from './MessageList.tsx';
 import { InputBar } from './InputBar.tsx';
+import { VoiceModal } from './VoiceModal.tsx';
 
 interface Props {
   config: WidgetConfigResponse;
@@ -216,6 +217,7 @@ export function ChatWidget({ config }: Props) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState(false);
   const [lang, setLang] = useState<string>(config.languages.default ?? 'ru');
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [leadInterest, setLeadInterest] = useState<string | null>(null);
   const [leadDismissed, setLeadDismissed] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
@@ -362,11 +364,28 @@ export function ChatWidget({ config }: Props) {
               enabledLangs={enabledLangs}
               onClose={closeWidget}
               onLangChange={handleLangChange}
+              onVoiceToggle={() => setVoiceOpen(v => !v)}
+              voiceActive={voiceOpen}
             />
+
+            {/* Voice mode — replaces chat body, keeps header + same container */}
+            {voiceOpen && sessionId && !sessionError && (
+              <VoiceModal
+                isOpen={voiceOpen}
+                onClose={() => setVoiceOpen(false)}
+                sendMessage={sendMessage}
+                messages={messages}
+                isStreaming={isStreaming}
+                sessionId={sessionId}
+                lang={lang}
+                displayName={config.branding.displayName}
+                hasLead={!!leadSubmitted}
+              />
+            )}
 
             {sessionError ? (
               <ErrorPanel />
-            ) : (
+            ) : voiceOpen && sessionId ? null : (
               <>
                 {/* Typewriter overlay — shown before session is ready */}
                 {!sessionId && !sessionError && (
