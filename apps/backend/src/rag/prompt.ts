@@ -3,6 +3,7 @@ import type { RetrievedChunk } from './retrieve.js';
 import type { FaqResult } from './faq-engine.js';
 import type { DetectedIntent } from './intent-engine.js';
 import type { Lang } from '@bank-chatbot/shared';
+import { buildChatCapabilityGuard } from './capability-guard.js';
 
 type MessageRole = 'user' | 'assistant' | 'system';
 
@@ -470,33 +471,8 @@ PROHIBITED: programming, math, medicine, politics, history, recipes, language le
 If a question is not about banking — politely explain you are a banking assistant and offer banking topics you can help with.`,
 };
 
-// ─── Banking safety (language-specific, unchanged from original) ─────────────
-
-const SAFETY: Record<string, string> = {
-  ru: `
-### ⚠️ Банковская безопасность (КРИТИЧНО — нарушать запрещено):
-1. НИКОГДА не придумывайте ставки, комиссии, сроки или условия — только факты из базы знаний
-2. НИКОГДА не описывайте процедуры, которых нет в базе знаний
-3. Если ответа НЕТ в базе знаний — честно скажите и направьте на горячую линию
-4. Если клиент делится PIN, CVV, полным номером карты или OTP — немедленно предупредите о смене и не используйте эти данные
-5. Не обсуждайте конкурентов или внебанковские темы`,
-
-  uz: `
-### ⚠️ Bank xavfsizligi (MUHIM — buzish taqiqlangan):
-1. HECH QACHON stavka, komissiya, muddat yoki shartlarni to'qimang — faqat bilimlar bazasidagi faktlar
-2. HECH QACHON bilimlar bazasida yo'q protseduralarni tavsiflang
-3. Javob BK da bo'lmasa — halol ayting va qo'ng'iroq raqamiga yo'naltiring
-4. Mijoz PIN, CVV, karta raqami yoki OTP ulashsa — darhol almashtirish haqida ogohlantiring
-5. Raqobatchilar yoki bank bo'lmagan mavzularni muhokama qilmang`,
-
-  en: `
-### ⚠️ Banking safety (CRITICAL — never violate):
-1. NEVER invent rates, fees, terms, or conditions — only facts from the knowledge base
-2. NEVER describe procedures not present in the knowledge base
-3. If the answer is NOT in the KB — honestly say so and direct to the hotline
-4. If a customer shares PIN, CVV, full card number, or OTP — immediately warn them to change it
-5. Do not discuss competitors or non-banking topics`,
-};
+// SAFETY constant removed — rules now live in src/rag/capability-guard.ts
+// and are rendered per-call via buildChatCapabilityGuard(lang, hotline).
 
 // ─── Escalation phrases ──────────────────────────────────────────────────────
 
@@ -551,8 +527,8 @@ export function buildSystemPrompt(
   // ── 3c. WOW demo scenarios ───────────────────────────────────────────────────
   prompt += `\n${WOW_SCENARIOS[l] ?? WOW_SCENARIOS['ru']!}\n`;
 
-  // ── 4. Safety rules ─────────────────────────────────────────────────────────
-  prompt += `\n${SAFETY[l]}\n`;
+  // ── 4. Safety rules — from shared BankingCapabilityGuard ────────────────────
+  prompt += `\n${buildChatCapabilityGuard(l, hotline)}\n`;
 
   // ── 5. Lead generation ──────────────────────────────────────────────────────
   prompt += `\n${LEAD_GEN[l]}\n`;

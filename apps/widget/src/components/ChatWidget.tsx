@@ -7,6 +7,7 @@ import { Header } from './Header.tsx';
 import { MessageList } from './MessageList.tsx';
 import { InputBar } from './InputBar.tsx';
 import { VoiceCallPanel } from './VoiceCallPanel.tsx';
+import { RealtimeCallPanel } from './RealtimeCallPanel.tsx';
 
 interface Props {
   config: WidgetConfigResponse;
@@ -371,17 +372,27 @@ export function ChatWidget({ config }: Props) {
               />
             )}
 
-            {/* Voice call mode — fills entire panel, no header, hands-free */}
+            {/* Voice call mode — fills entire panel, no header, hands-free.
+                Phase 3 (realtime) or Phase 2 (legacy VAD) chosen by voiceEngine flag. */}
             {voiceOpen && sessionId && !sessionError && (
-              <VoiceCallPanel
-                onClose={() => setVoiceOpen(false)}
-                sendMessage={sendMessage}
-                messages={messages}
-                isStreaming={isStreaming}
-                sessionId={sessionId}
-                lang={lang}
-                displayName={config.branding.displayName}
-              />
+              config.voiceEngine === 'realtime' ? (
+                <RealtimeCallPanel
+                  onClose={() => setVoiceOpen(false)}
+                  tenantId={config.tenant_id}
+                  sessionId={sessionId}
+                  displayName={config.branding.displayName}
+                />
+              ) : (
+                <VoiceCallPanel
+                  onClose={() => setVoiceOpen(false)}
+                  sendMessage={sendMessage}
+                  messages={messages}
+                  isStreaming={isStreaming}
+                  sessionId={sessionId}
+                  lang={lang}
+                  displayName={config.branding.displayName}
+                />
+              )
             )}
 
             {sessionError ? (

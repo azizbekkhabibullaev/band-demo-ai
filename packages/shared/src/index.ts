@@ -27,6 +27,8 @@ export interface WidgetConfigResponse {
   };
   hotline: string;
   greeting: Record<Lang, string>;
+  /** Feature flag — which voice engine to use. Defaults to 'legacy' if absent. */
+  voiceEngine?: 'legacy' | 'realtime';
 }
 
 // ── /api/session/new ──────────────────────────────────────────

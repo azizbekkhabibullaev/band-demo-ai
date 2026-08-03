@@ -33,3 +33,6 @@ coverage/
 .claude/
 .vercel
 uploads/
+
+# Client documents — do not publish
+audit-report/

@@ -8,6 +8,10 @@ export async function widgetConfigRoute(app: FastifyInstance): Promise<void> {
       return reply.code(404).send({ error: { code: 'not_found', message: 'Not found' } });
     }
     const t = req.tenant;
+    const voiceEngineEnv = process.env.VOICE_ENGINE;
+    const voiceEngine: 'legacy' | 'realtime' =
+      voiceEngineEnv === 'realtime' ? 'realtime' : 'legacy';
+
     const response: WidgetConfigResponse = {
       tenant_id: t.id,
       name: t.name,
@@ -15,6 +19,7 @@ export async function widgetConfigRoute(app: FastifyInstance): Promise<void> {
       languages: t.config.languages,
       hotline: t.config.hotline,
       greeting: t.config.greeting,
+      voiceEngine,
     };
     return response;
   });

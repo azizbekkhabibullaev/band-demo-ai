@@ -1,7 +1,7 @@
 import { Pool, type PoolConfig } from 'pg';
 
 function buildConfig(): PoolConfig {
-  const url = process.env.DATABASE_URL ?? 'postgres://chatbot:chatbot@localhost:5433/chatbot';
+  const url = process.env.DATABASE_URL ?? 'postgres://chatbot:chatbot@localhost:5432/chatbot';
   return { connectionString: url, max: 10, idleTimeoutMillis: 30_000 };
 }
 

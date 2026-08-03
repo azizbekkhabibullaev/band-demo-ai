@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import Fastify, { type FastifyInstance } from 'fastify';
 import multipart from '@fastify/multipart';
+import websocket from '@fastify/websocket';
 import { pathToFileURL } from 'node:url';
 import { healthRoute } from './routes/health.js';
 import { widgetConfigRoute } from './routes/widget-config.js';
@@ -13,6 +14,7 @@ import { adminRoute } from './routes/admin.js';
 import { leadsRoute } from './routes/leads.js';
 import { callsRoute } from './routes/admin/calls.js';
 import { voiceRoute } from './routes/voice.js';
+import { voiceRealtimeRoute } from './routes/voice-realtime.js';
 
 export async function build(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -28,6 +30,9 @@ export async function build(): Promise<FastifyInstance> {
     },
   });
 
+  // WebSocket plugin — required for Phase 3 Realtime Voice proxy
+  await app.register(websocket);
+
   await app.register(requestIdPlugin);
   await app.register(originPlugin);
   await app.register(rateLimitPlugin);
@@ -39,6 +44,7 @@ export async function build(): Promise<FastifyInstance> {
   await app.register(adminRoute);
   await app.register(callsRoute);
   await app.register(voiceRoute);
+  await app.register(voiceRealtimeRoute);
 
   return app;
 }
