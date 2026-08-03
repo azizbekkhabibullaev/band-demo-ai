@@ -538,6 +538,14 @@ export async function voiceRealtimeRoute(app: FastifyInstance): Promise<void> {
           case 'input_audio_buffer.speech_stopped': {
             speechStoppedAt = Date.now();
 
+            // If speech_started was blocked by the echo gate, speechStartedAt was never set.
+            // This segment is acoustic echo or background noise — discard silently.
+            if (speechStartedAt === null && bargeInTimer === null && !bargeInActive) {
+              console.log(`[VoiceRT][${connId}] speech_stopped SKIPPED — echo gate blocked speech_started, discarding echo`);
+              speechStoppedAt = null;
+              break;
+            }
+
             if (bargeInTimer) {
               // Timer hasn't fired yet — actual speech duration < BARGE_IN_CONFIRM_MS (600ms).
               // This means the user made a short sound while the AI was speaking.
