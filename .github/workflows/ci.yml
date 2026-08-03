@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main, master]
 
-# Opt into Node.js 24 action runners ahead of the June 16 2026 forced migration
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # ── Type-check + Tests ────────────────────────────────────────────────────
@@ -41,7 +38,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - name: Install dependencies
@@ -68,7 +65,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - name: Install dependencies
